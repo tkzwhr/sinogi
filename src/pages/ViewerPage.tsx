@@ -9,46 +9,38 @@ import Redo from '@spectrum-icons/workflow/Redo';
 import Rewind from '@spectrum-icons/workflow/Rewind';
 import Undo from '@spectrum-icons/workflow/Undo';
 import { useParams } from 'react-router-dom';
-import { BoundedGoban } from '@sabaki/shudan';
-import { useWindowSize } from 'react-use';
-import { Key, useState } from 'react';
+import { BoundedGoban, Vertex } from '@sabaki/shudan';
+import { useAsync, useWindowSize } from 'react-use';
+import { Key } from 'react';
+import { fetchBookProblemSGF } from '@/api';
+import { ErrorPage } from '@/pages/ErrorPage';
+import useProblem from '@/hooks/problem';
 
 export default function ViewerPage() {
-  const signMap = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 1, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0],
-  ];
-
-  const { problemId } = useParams();
   const { width, height } = useWindowSize();
-  const [title] = useState('タイトル1');
-  const [desc] = useState('概要概要概要概要概要');
-  const [comment] = useState('補足説明A');
+  const { problemId } = useParams();
+
+  const sgfText = useAsync(async () => await fetchBookProblemSGF(problemId!));
+  const [problem, problemFn] = useProblem(sgfText.value);
+
+  if (sgfText.loading) return <></>;
+  if (sgfText.error) return <ErrorPage error={sgfText.error.message} />;
 
   const action = (key: Key) => {
     switch (key) {
       case 'rewind':
-        console.log('rewind');
+        problemFn.rewind();
         break;
       case 'undo':
-        console.log('undo');
+        problemFn.undo();
         break;
       case 'redo':
-        console.log('redo');
+        problemFn.redo();
         break;
       default:
         break;
     }
   };
-
-  if (!problemId) return <></>;
 
   return (
     <View padding="size-200">
@@ -57,7 +49,10 @@ export default function ViewerPage() {
           <BoundedGoban
             maxWidth={width - 304}
             maxHeight={height - 32}
-            signMap={signMap}
+            signMap={problem.boardState.board.signMap}
+            markerMap={problem.boardState.markerMap}
+            ghostStoneMap={problem.boardState.ghostStoneMap}
+            onVertexClick={(_: any, vertex: Vertex) => problemFn.play(vertex)}
           />
         </View>
         <View backgroundColor="gray-200" padding="size-100">
@@ -73,9 +68,19 @@ export default function ViewerPage() {
                 <Redo />
               </Item>
             </ActionGroup>
-            <LabeledValue label="タイトル" value={title} />
-            <LabeledValue label="概要" value={desc} />
-            <LabeledValue label="コメント" value={comment} />
+            {problem.gameInfo.gameName && (
+              <LabeledValue
+                label="タイトル"
+                value={problem.gameInfo.gameName}
+              />
+            )}
+            {problem.gameInfo.gameComment && (
+              <LabeledValue label="概要" value={problem.gameInfo.gameComment} />
+            )}
+            <LabeledValue
+              label="コメント"
+              value={problem.boardState?.comment ?? ''}
+            />
           </Flex>
         </View>
       </Flex>

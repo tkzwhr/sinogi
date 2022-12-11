@@ -6,6 +6,7 @@ import { useState } from 'react';
 import { Book } from '@/types';
 import { fetchBooks, fetchBookProblemSummaries, openProblemView } from '@/api';
 import { useAsync } from 'react-use';
+import { ErrorPage } from '@/pages/ErrorPage';
 
 export default function BooksPage() {
   const [selectedBook, setSelectedBook] = useState<
@@ -23,13 +24,10 @@ export default function BooksPage() {
     console.log(`delete: ${bookId}`);
   };
 
-  if (
-    books.loading ||
-    bookProblemSummaries.loading ||
-    books.error ||
-    bookProblemSummaries.error
-  )
-    return <></>;
+  if (books.loading || bookProblemSummaries.loading) return <></>;
+  if (books.error) return <ErrorPage error={books.error.message} />;
+  if (bookProblemSummaries.error)
+    return <ErrorPage error={bookProblemSummaries.error.message} />;
 
   const book = books.value?.items.find((i) => i.bookId === selectedBook);
   const bookProblemSummary = bookProblemSummaries.value?.items.find(

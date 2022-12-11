@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAsync } from 'react-use';
 import { fetchDateSummaries } from '@/api';
 import WeeklyHeatmap from '@/components/weekly-heatmap/WeeklyHeatmap';
+import { ErrorPage } from '@/pages/ErrorPage';
 
 export default function FootprintsPage() {
   const [displayMode, setDisplayMode] = useState<
@@ -21,7 +22,9 @@ export default function FootprintsPage() {
     }
   };
 
-  if (dateSummaries.loading || dateSummaries.error) return <></>;
+  if (dateSummaries.loading) return <></>;
+  if (dateSummaries.error)
+    return <ErrorPage error={dateSummaries.error.message} />;
 
   return (
     <PageContainer>

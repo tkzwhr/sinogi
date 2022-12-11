@@ -94,6 +94,15 @@ export async function fetchBookProblemSummaries(): Promise<{
   });
 }
 
+export async function fetchBookProblemSGF(
+  id: BookProblem['problemId'],
+): Promise<string> {
+  console.log(id);
+  const sgfText =
+    '(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[かんたんな詰碁１]GC[黒先白死]AB[br][dr][cq][cp][ds][do][eo][fo][gp][hp][hq][ir][is]AW[er][es][gr][hr][hs][gq][ep][fp][dp]C[10級](;B[fs]TE[1];W[fr];B[eq]LB[dq:a]TR[fs][gs]C[白はaに入れないため△の1眼しかない。])(;B[eq];W[fq]LB[dq:A][fs:B]C[AとBが見合い。]))';
+  return Promise.resolve(sgfText);
+}
+
 export async function fetchDateSummaries(): Promise<{
   items: DateSummary[];
 }> {

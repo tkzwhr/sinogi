@@ -11,6 +11,9 @@
   },
   "dependencies": {
     "@adobe/react-spectrum": "^3.23.0",
+    "@sabaki/go-board": "^1.4.3",
+    "@sabaki/immutable-gametree": "^1.9.4",
+    "@sabaki/sgf": "^3.4.7",
     "@sabaki/shudan": "^1.7.1",
     "date-fns": "^2.29.3",
     "react": "^18.2.0",

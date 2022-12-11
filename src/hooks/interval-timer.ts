@@ -1,5 +1,6 @@
 import { useTimer } from 'react-timer-hook';
 import addSeconds from 'date-fns/addSeconds';
+import { useCallback } from 'react';
 
 type IntervalTimerHook = {
   time: Date;
@@ -21,6 +22,9 @@ export default function useIntervalTimer(
     time: new Date(1970, 1, 1, timer.hours, timer.minutes, timer.seconds),
     rate:
       (timer.hours * 3600 + timer.minutes * 60 + timer.seconds) / intervalInSec,
-    restart: () => timer.restart(addSeconds(new Date(), intervalInSec)),
+    restart: useCallback(
+      () => timer.restart(addSeconds(new Date(), intervalInSec)),
+      [],
+    ),
   };
 }
