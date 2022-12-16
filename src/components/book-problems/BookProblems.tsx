@@ -1,3 +1,4 @@
+import { BookProblem, ProblemSummary } from '@/types';
 import {
   Cell,
   Column,
@@ -7,7 +8,6 @@ import {
   TableView,
   ActionButton,
 } from '@adobe/react-spectrum';
-import { BookProblem, ProblemSummary } from '@/types';
 import { useMemo } from 'react';
 
 type Props = {

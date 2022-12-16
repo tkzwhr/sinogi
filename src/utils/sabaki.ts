@@ -1,8 +1,8 @@
-// @ts-ignore
-import { parse, parseVertex, parseCompressedVertices } from '@sabaki/sgf';
+import GoBoard, { Vertex } from '@sabaki/go-board';
 // @ts-ignore
 import GameTree from '@sabaki/immutable-gametree';
-import GoBoard, { Vertex } from '@sabaki/go-board';
+// @ts-ignore
+import { parse, parseVertex, parseCompressedVertices } from '@sabaki/sgf';
 import { GhostStone, Map, Marker } from '@sabaki/shudan/src/Goban';
 
 const BLACK = 1;

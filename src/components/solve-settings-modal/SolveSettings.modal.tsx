@@ -1,3 +1,4 @@
+import { Book, SolveSettings } from '@/types';
 import {
   Content,
   Dialog,
@@ -10,7 +11,6 @@ import {
   StatusLight,
 } from '@adobe/react-spectrum';
 import { Key, useState } from 'react';
-import { Book, SolveSettings } from '@/types';
 
 type Props = SolveSettings & {
   books: Book[];

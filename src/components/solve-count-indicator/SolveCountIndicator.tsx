@@ -13,6 +13,7 @@ export default function SolveCountIndicator(props: Props) {
     <>
       {availableQuota && (
         <Meter
+          width="100%"
           label="今日の回答数"
           maxValue={props.quota}
           value={props.solveCount}

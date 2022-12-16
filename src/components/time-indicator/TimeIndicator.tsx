@@ -21,6 +21,7 @@ export default function TimeIndicator(props: Props) {
     <>
       {availableTimer && (
         <Meter
+          width="100%"
           label="残り時間"
           maxValue={1}
           value={props.value}

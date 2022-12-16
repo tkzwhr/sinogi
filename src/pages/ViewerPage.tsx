@@ -1,26 +1,30 @@
+import { fetchBookProblemSGF } from '@/api';
+import useProblem from '@/hooks/problem';
+import { ErrorPage } from '@/pages/ErrorPage';
 import {
   Flex,
   View,
   ActionGroup,
   Item,
   LabeledValue,
+  Text,
 } from '@adobe/react-spectrum';
+import { BoundedGoban, Vertex } from '@sabaki/shudan';
 import Redo from '@spectrum-icons/workflow/Redo';
 import Rewind from '@spectrum-icons/workflow/Rewind';
 import Undo from '@spectrum-icons/workflow/Undo';
-import { useParams } from 'react-router-dom';
-import { BoundedGoban, Vertex } from '@sabaki/shudan';
-import { useAsync, useWindowSize } from 'react-use';
 import { Key } from 'react';
-import { fetchBookProblemSGF } from '@/api';
-import { ErrorPage } from '@/pages/ErrorPage';
-import useProblem from '@/hooks/problem';
+import { useParams } from 'react-router-dom';
+import { useAsync, useWindowSize } from 'react-use';
 
 export default function ViewerPage() {
   const { width, height } = useWindowSize();
   const { problemId } = useParams();
 
-  const sgfText = useAsync(async () => await fetchBookProblemSGF(problemId!));
+  const sgfText = useAsync(async () => {
+    if (!problemId) return '';
+    return await fetchBookProblemSGF(problemId);
+  }, [problemId]);
   const [problem, problemFn] = useProblem(sgfText.value);
 
   if (sgfText.loading) return <></>;
@@ -45,6 +49,7 @@ export default function ViewerPage() {
   return (
     <View padding="size-200">
       <Flex gap="size-200">
+        {/* Board, InfoPanel */}
         <View>
           <BoundedGoban
             maxWidth={width - 304}
@@ -56,31 +61,49 @@ export default function ViewerPage() {
           />
         </View>
         <View backgroundColor="gray-200" padding="size-100">
-          <Flex direction="column" gap="size-200" width="size-3000">
-            <ActionGroup density="compact" onAction={action}>
-              <Item key="rewind" aria-label="最初に戻る">
+          {/* Info, Actions */}
+          <Flex
+            direction="column"
+            width="size-3000"
+            height="100%"
+            justifyContent="space-between"
+          >
+            <Flex direction="column" gap="size-200" width="size-3000">
+              {problem.gameInfo.gameName && (
+                <LabeledValue
+                  label="タイトル"
+                  value={problem.gameInfo.gameName}
+                />
+              )}
+              {problem.gameInfo.gameComment && (
+                <LabeledValue
+                  label="概要"
+                  value={problem.gameInfo.gameComment}
+                />
+              )}
+              <LabeledValue
+                label="コメント"
+                value={problem.boardState?.comment ?? ''}
+              />
+            </Flex>
+            <ActionGroup
+              density="compact"
+              orientation="vertical"
+              onAction={action}
+            >
+              <Item key="rewind" aria-label="最初に戻す">
                 <Rewind />
+                <Text>最初に戻す</Text>
               </Item>
-              <Item key="undo" aria-label="1手戻る">
+              <Item key="undo" aria-label="1手戻す">
                 <Undo />
+                <Text>1手戻す</Text>
               </Item>
-              <Item key="redo" aria-label="1手進む">
+              <Item key="redo" aria-label="1手進める">
                 <Redo />
+                <Text>1手進める</Text>
               </Item>
             </ActionGroup>
-            {problem.gameInfo.gameName && (
-              <LabeledValue
-                label="タイトル"
-                value={problem.gameInfo.gameName}
-              />
-            )}
-            {problem.gameInfo.gameComment && (
-              <LabeledValue label="概要" value={problem.gameInfo.gameComment} />
-            )}
-            <LabeledValue
-              label="コメント"
-              value={problem.boardState?.comment ?? ''}
-            />
           </Flex>
         </View>
       </Flex>

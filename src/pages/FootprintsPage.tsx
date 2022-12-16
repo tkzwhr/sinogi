@@ -1,10 +1,10 @@
+import { fetchDateSummaries } from '@/api';
 import PageContainer from '@/components/PageContainer';
+import WeeklyHeatmap from '@/components/weekly-heatmap/WeeklyHeatmap';
+import { ErrorPage } from '@/pages/ErrorPage';
 import { View, Flex, RadioGroup, Radio } from '@adobe/react-spectrum';
 import { useState } from 'react';
 import { useAsync } from 'react-use';
-import { fetchDateSummaries } from '@/api';
-import WeeklyHeatmap from '@/components/weekly-heatmap/WeeklyHeatmap';
-import { ErrorPage } from '@/pages/ErrorPage';
 
 export default function FootprintsPage() {
   const [displayMode, setDisplayMode] = useState<

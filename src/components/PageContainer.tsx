@@ -1,4 +1,3 @@
-import React, { Key } from 'react';
 import {
   View,
   MenuTrigger,
@@ -6,6 +5,7 @@ import {
   Item,
   Menu,
 } from '@adobe/react-spectrum';
+import React, { Key } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 type PageMetadata = {

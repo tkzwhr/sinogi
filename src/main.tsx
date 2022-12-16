@@ -1,13 +1,12 @@
+import './index.styl';
+import BooksPage from '@/pages/BooksPage';
+import FootprintsPage from '@/pages/FootprintsPage';
+import SolvePage from '@/pages/SolvePage';
+import ViewerPage from '@/pages/ViewerPage';
+import { darkTheme, Provider } from '@adobe/react-spectrum';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { darkTheme, Provider } from '@adobe/react-spectrum';
-import SolvePage from '@/pages/SolvePage';
-import BooksPage from '@/pages/BooksPage';
-import FootprintsPage from '@/pages/FootprintsPage';
-import ViewerPage from '@/pages/ViewerPage';
-
-import './index.styl';
 
 const router = createBrowserRouter([
   {

@@ -1,7 +1,7 @@
+import { Book } from '@/types';
 import { Item, ListView, ActionMenu, Text } from '@adobe/react-spectrum';
 import Delete from '@spectrum-icons/workflow/Delete';
 import { Key } from 'react';
-import { Book } from '@/types';
 
 type Props = {
   items: Book[];

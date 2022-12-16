@@ -1,30 +1,45 @@
-import { useTimer } from 'react-timer-hook';
 import addSeconds from 'date-fns/addSeconds';
 import { useCallback } from 'react';
+import { useTimer } from 'react-timer-hook';
 
-type IntervalTimerHook = {
+type IntervalTimerState = {
   time: Date;
   rate: number;
+};
+
+type IntervalTimerFn = {
   restart: () => void;
+  pause: () => void;
 };
 
 export default function useIntervalTimer(
   intervalInSec: number,
-  onExpire: () => void,
-): IntervalTimerHook {
+  onExpire?: () => void,
+): [IntervalTimerState, IntervalTimerFn] {
   const timer = useTimer({
     expiryTimestamp: new Date(),
     onExpire,
     autoStart: false,
   });
 
-  return {
-    time: new Date(1970, 1, 1, timer.hours, timer.minutes, timer.seconds),
-    rate:
-      (timer.hours * 3600 + timer.minutes * 60 + timer.seconds) / intervalInSec,
-    restart: useCallback(
-      () => timer.restart(addSeconds(new Date(), intervalInSec)),
-      [],
-    ),
-  };
+  const time = new Date(1970, 1, 1, timer.hours, timer.minutes, timer.seconds);
+  const rate =
+    (timer.hours * 3600 + timer.minutes * 60 + timer.seconds) / intervalInSec;
+
+  const restart = useCallback(() => {
+    timer.restart(addSeconds(new Date(), intervalInSec));
+    return 1;
+  }, []);
+  const pause = useCallback(timer.pause, []);
+
+  return [
+    {
+      time,
+      rate,
+    },
+    {
+      restart,
+      pause,
+    },
+  ];
 }
