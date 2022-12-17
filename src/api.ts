@@ -3,11 +3,20 @@ import {
   BookProblemSummary,
   BookWithProblems,
   DateSummary,
+  SolveSettings,
 } from '@/types';
 import { subDays } from 'date-fns';
 
+function delay<T>(value: T): Promise<T> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(value);
+    }, 300);
+  });
+}
+
 export async function fetchBooks(): Promise<{ items: BookWithProblems[] }> {
-  return Promise.resolve({
+  return delay({
     items: [
       {
         bookId: 'book1',
@@ -53,7 +62,7 @@ export async function fetchBooks(): Promise<{ items: BookWithProblems[] }> {
 export async function fetchBookProblemSummaries(): Promise<{
   items: BookProblemSummary[];
 }> {
-  return Promise.resolve({
+  return delay({
     items: [
       {
         bookId: 'book1',
@@ -97,10 +106,19 @@ export async function fetchBookProblemSummaries(): Promise<{
 export async function fetchBookProblemSGF(
   id: BookProblem['problemId'],
 ): Promise<string> {
-  console.log(id);
+  if (id !== 'book1_problem1')
+    return Promise.reject({ message: '問題が見つかりません' });
   const sgfText =
     '(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[かんたんな詰碁１]GC[黒先白死]AB[br][dr][cq][cp][ds][do][eo][fo][gp][hp][hq][ir][is]AW[er][es][gr][hr][hs][gq][ep][fp][dp]C[10級](;B[fs]TE[1];W[fr];B[eq]LB[dq:a]TR[fs][gs]C[白はaに入れないため△の1眼しかない。])(;B[eq];W[fq]LB[dq:A][fs:B]C[AとBが見合い。]))';
-  return Promise.resolve(sgfText);
+  return delay(sgfText);
+}
+
+export async function fetchTodaySummary(): Promise<DateSummary> {
+  return Promise.resolve({
+    date: new Date(),
+    numberOfAnswers: 2,
+    numberOfCorrectAnswers: 2,
+  });
 }
 
 export async function fetchDateSummaries(): Promise<{
@@ -124,13 +142,29 @@ export async function fetchDateSummaries(): Promise<{
     [1, 7],
     [1, 8],
   ];
-  return Promise.resolve({
+  return delay({
     items: data.map(([numberOfCorrectAnswers, numberOfAnswers], i) => ({
       date: subDays(new Date(), Math.floor(Math.sqrt(i * i * i))),
       numberOfAnswers,
       numberOfCorrectAnswers,
     })),
   });
+}
+
+export async function fetchSolveSettings(): Promise<SolveSettings> {
+  return delay({
+    scope: 'all',
+    selectedBooks: ['book2'],
+    quota: 20,
+    allottedTime: 5,
+  });
+}
+
+export async function storeSolveSettings(
+  solveSettings: SolveSettings,
+): Promise<void> {
+  console.debug(solveSettings);
+  return Promise.resolve();
 }
 
 export async function openProblemView(problemId: BookProblem['problemId']) {

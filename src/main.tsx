@@ -1,8 +1,8 @@
 import './index.styl';
-import BooksPage from '@/pages/BooksPage';
-import FootprintsPage from '@/pages/FootprintsPage';
-import SolvePage from '@/pages/SolvePage';
-import ViewerPage from '@/pages/ViewerPage';
+import BooksPage from '@/pages/Books.page';
+import FootprintsPage from '@/pages/Footprints.page';
+import SolvePage from '@/pages/Solve.page';
+import ViewerPage from '@/pages/Viewer.page';
 import { darkTheme, Provider } from '@adobe/react-spectrum';
 import React from 'react';
 import ReactDOM from 'react-dom/client';

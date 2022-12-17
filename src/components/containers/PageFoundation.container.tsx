@@ -1,9 +1,9 @@
 import {
-  View,
-  MenuTrigger,
   ActionButton,
   Item,
   Menu,
+  MenuTrigger,
+  View,
 } from '@adobe/react-spectrum';
 import React, { Key } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -19,7 +19,7 @@ const PAGES: PageMetadata[] = [
   { path: '/books', title: '問題を管理する' },
 ];
 
-export default function PageContainer({
+export default function PageFoundationContainer({
   children,
 }: {
   children: React.ReactNode;
@@ -37,7 +37,7 @@ export default function PageContainer({
       <View position="fixed" right="4px" bottom="4px">
         <MenuTrigger>
           <ActionButton>
-            {PAGES.find((p) => p.path === location.pathname)!.title}
+            {PAGES.find((p) => p.path === location.pathname)?.title ?? '-'}
           </ActionButton>
           <Menu onAction={transition} items={PAGES}>
             {(item: PageMetadata) => <Item key={item.path}>{item.title}</Item>}
