@@ -1,5 +1,13 @@
 import { Book } from '@/types';
-import { ActionMenu, Item, ListView, Text } from '@adobe/react-spectrum';
+import {
+  ActionMenu,
+  Item,
+  ListView,
+  Text,
+  IllustratedMessage,
+  Content,
+} from '@adobe/react-spectrum';
+import NotFound from '@spectrum-icons/illustrations/NotFound';
 import Delete from '@spectrum-icons/workflow/Delete';
 import { Key } from 'react';
 
@@ -23,16 +31,27 @@ export default function BookList(props: Props) {
     props.onDeleteBook(bookId);
   };
 
+  const emptyState = () => {
+    return (
+      <IllustratedMessage>
+        <NotFound />
+        <Content>ブックが見つかりません</Content>
+      </IllustratedMessage>
+    );
+  };
+
   return (
     <ListView
       items={props.items}
       width="size-3000"
+      minHeight="size-3000"
       aria-label="ブック"
       selectionMode="single"
       selectionStyle="highlight"
       selectedKeys={props.selectedBook ? [props.selectedBook] : []}
       onSelectionChange={updateKeys}
       disallowEmptySelection
+      renderEmptyState={emptyState}
     >
       {(item) => (
         <Item key={item.bookId}>

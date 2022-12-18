@@ -1,7 +1,7 @@
-import { fetchDateSummaries, fetchSolveSettings } from '@/api';
 import FootprintsContainer from '@/components/containers/Footprints.container';
 import PageFoundationContainer from '@/components/containers/PageFoundation.container';
 import { ErrorPage } from '@/pages/Error.page';
+import { fetchDateSummaries, fetchSolveSettings } from '@/services/api';
 import { ProgressCircle } from '@adobe/react-spectrum';
 import { useAsync } from 'react-use';
 

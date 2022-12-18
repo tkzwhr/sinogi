@@ -3,14 +3,20 @@ export type Book = {
   name: string;
 };
 
-export type BookProblem = {
+export type Problem = {
   problemId: string;
   title: string;
-  desc: string;
+  description?: string;
 };
 
+export type SGFText = {
+  sgfText: string;
+};
+
+export type RawProblem = Omit<Problem, 'problemId'> & SGFText;
+
 export type BookWithProblems = Book & {
-  problems: BookProblem[];
+  problems: Problem[];
 };
 
 type Summary = {

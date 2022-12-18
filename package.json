@@ -17,12 +17,15 @@
     "@sabaki/shudan": "^1.7.1",
     "@spectrum-icons/illustrations": "^3.5.2",
     "@spectrum-icons/workflow": "^4.0.5",
+    "@tauri-apps/api": "^1.2.0",
     "date-fns": "^2.29.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-event-hook": "^3.1.1",
     "react-router-dom": "^6.4.3",
     "react-timer-hook": "^3.0.5",
-    "react-use": "^17.4.0"
+    "react-use": "^17.4.0",
+    "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",

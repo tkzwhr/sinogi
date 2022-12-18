@@ -3,10 +3,13 @@ import BooksPage from '@/pages/Books.page';
 import FootprintsPage from '@/pages/Footprints.page';
 import SolvePage from '@/pages/Solve.page';
 import ViewerPage from '@/pages/Viewer.page';
+import { listenBackendEvents } from '@/services/event';
 import { darkTheme, Provider } from '@adobe/react-spectrum';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+listenBackendEvents().then(() => console.info('Listen backend events.'));
 
 const router = createBrowserRouter([
   {

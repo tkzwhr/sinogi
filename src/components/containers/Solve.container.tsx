@@ -1,10 +1,10 @@
-import { fetchBookProblemSGF, openProblemView } from '@/api';
 import SolveCountIndicator from '@/components/presentational/SolveCountIndicator';
 import TimeIndicator from '@/components/presentational/TimeIndicator';
 import useIntervalTimer from '@/hooks/interval-timer';
 import useProblem from '@/hooks/problem';
 import { useRandomArray } from '@/hooks/random-array';
 import { ErrorPage } from '@/pages/Error.page';
+import { fetchProblemSGF, openProblemView } from '@/services/api';
 import { SolveSettings } from '@/types';
 import {
   ActionGroup,
@@ -36,9 +36,9 @@ export default function SolveContainer(props: Props) {
 
   const [problemId, nextProblem] = useRandomArray(props.problemIds);
 
-  const sgfText = useAsync(() => fetchBookProblemSGF(problemId!), [problemId]);
+  const sgfText = useAsync(() => fetchProblemSGF(problemId!), [problemId]);
   const [problem, problemFn] = useProblem(
-    solveMode !== 'ready' ? sgfText.value : '',
+    solveMode !== 'ready' && sgfText.value ? sgfText.value.sgfText : '',
   );
 
   const [intervalTimer, intervalTimerFn] = useIntervalTimer(
@@ -84,7 +84,6 @@ export default function SolveContainer(props: Props) {
     }
   }, [solveMode]);
 
-  if (sgfText.loading) return <></>;
   if (sgfText.error) return <ErrorPage message={sgfText.error.message} />;
 
   const action = (key: Key) => {

@@ -1,8 +1,9 @@
+import { RawProblem } from '@/types';
 import GoBoard, { Vertex } from '@sabaki/go-board';
 // @ts-ignore
 import GameTree from '@sabaki/immutable-gametree';
 // @ts-ignore
-import { parse, parseCompressedVertices, parseVertex } from '@sabaki/sgf';
+import * as SGF from '@sabaki/sgf';
 import { GhostStone, Map, Marker } from '@sabaki/shudan/src/Goban';
 
 const BLACK = 1;
@@ -40,8 +41,24 @@ export type BoardState = {
   comment?: string;
 };
 
+export function extractProblems(sgfText: string): RawProblem[] {
+  const rootNodes = SGF.parse(sgfText);
+  return rootNodes.flatMap((node: Node): RawProblem[] => {
+    const title = node.data.GN?.[0];
+    if (!title) return [];
+    const description = node.data.GC?.[0];
+    return [
+      {
+        title,
+        description,
+        sgfText: SGF.stringify(node),
+      },
+    ];
+  });
+}
+
 export function createGameTree(sgfText: string): GameTree {
-  const rootNodes = parse(sgfText);
+  const rootNodes = SGF.parse(sgfText);
   if (rootNodes.length > 1) throw 'Too many records.';
   return new GameTree({ root: rootNodes[0] });
 }
@@ -132,7 +149,7 @@ export function getMove(node: Node): PutPoint | null {
   const black = node.data.B;
   if (black) {
     return {
-      vertex: parseVertex(black[0]),
+      vertex: SGF.parseVertex(black[0]),
       stone: BLACK,
     };
   }
@@ -140,7 +157,7 @@ export function getMove(node: Node): PutPoint | null {
   const white = node.data.W;
   if (white) {
     return {
-      vertex: parseVertex(white[0]),
+      vertex: SGF.parseVertex(white[0]),
       stone: WHITE,
     };
   }
@@ -158,14 +175,14 @@ function getSize(gameTree: GameTree): [number, number] {
 
 function getAdded(node: Node): PutPoint[] {
   const blacks = (node.data.AB ?? []).flatMap((vertexStr: string) =>
-    parseCompressedVertices(vertexStr).map((vertex: Vertex) => ({
+    SGF.parseCompressedVertices(vertexStr).map((vertex: Vertex) => ({
       vertex,
       stone: BLACK,
     })),
   );
 
   const whites = (node.data.AW ?? []).flatMap((vertexStr: string) =>
-    parseCompressedVertices(vertexStr).map((vertex: Vertex) => ({
+    SGF.parseCompressedVertices(vertexStr).map((vertex: Vertex) => ({
       vertex,
       stone: WHITE,
     })),
@@ -221,7 +238,7 @@ function getMarkers(node: Node): MarkerPoint[] {
     if (!marks) return arr;
 
     const additional = marks.flatMap((vertexStr: string) =>
-      parseCompressedVertices(vertexStr).map((vertex: Vertex) => ({
+      SGF.parseCompressedVertices(vertexStr).map((vertex: Vertex) => ({
         vertex,
         marker: { type: MARKS[key as keyof typeof MARKS] as Marker['type'] },
       })),
@@ -232,7 +249,7 @@ function getMarkers(node: Node): MarkerPoint[] {
   const allLabels: MarkerPoint[] =
     node.data.LB?.map((composed: string) => {
       const [vertexStr, label] = composed.split(':');
-      const vertex: Vertex = parseVertex(vertexStr);
+      const vertex: Vertex = SGF.parseVertex(vertexStr);
       return { vertex, marker: { type: 'label', label } };
     }) ?? [];
 

@@ -1,4 +1,4 @@
-import { BookProblem, ProblemSummary } from '@/types';
+import { Problem, ProblemSummary } from '@/types';
 import {
   ActionButton,
   Cell,
@@ -11,9 +11,9 @@ import {
 import { useMemo } from 'react';
 
 type Props = {
-  items: BookProblem[];
+  items: Problem[];
   solveSummary: ProblemSummary[];
-  onClickShowProblem: (_0: BookProblem['problemId']) => void;
+  onClickShowProblem: (_0: Problem['problemId']) => void;
 };
 
 export default function BookProblems(props: Props) {
@@ -38,7 +38,7 @@ export default function BookProblems(props: Props) {
   }, [props]);
 
   return (
-    <TableView aria-label="詰碁一覧" width="99%">
+    <TableView aria-label="詰碁一覧" width="99%" minHeight="size-3000">
       <TableHeader>
         <Column maxWidth={128} align="start">
           &nbsp;
@@ -61,7 +61,7 @@ export default function BookProblems(props: Props) {
               </ActionButton>
             </Cell>
             <Cell>{item.title}</Cell>
-            <Cell>{item.desc}</Cell>
+            <Cell>{item.description}</Cell>
             <Cell>{item.accuracy}</Cell>
           </Row>
         )}

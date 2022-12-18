@@ -1,4 +1,4 @@
-import { fetchBooks } from '@/api';
+import { fetchBooks } from '@/services/api';
 import { SolveSettings } from '@/types';
 import {
   Button,

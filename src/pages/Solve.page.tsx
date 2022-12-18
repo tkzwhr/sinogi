@@ -1,12 +1,13 @@
-import {
-  fetchSolveSettings,
-  fetchTodaySummary,
-  storeSolveSettings,
-} from '@/api';
 import PageFoundationContainer from '@/components/containers/PageFoundation.container';
 import SolveContainer from '@/components/containers/Solve.container';
 import SolveSettingsModal from '@/components/containers/SolveSettings.modal';
 import { ErrorPage } from '@/pages/Error.page';
+import {
+  fetchBooks,
+  fetchSolveSettings,
+  fetchTodaySummary,
+  storeSolveSettings,
+} from '@/services/api';
 import { SolveSettings } from '@/types';
 import {
   ActionButton,
@@ -23,6 +24,8 @@ export default function SolvePage() {
   const solveSettings = useAsync(fetchSolveSettings);
 
   const todaySummary = useAsync(fetchTodaySummary);
+
+  const books = useAsync(fetchBooks);
 
   const [solveSettingsState, setSolveSettingsState] = useState<
     SolveSettings | undefined
@@ -43,7 +46,13 @@ export default function SolvePage() {
   if (todaySummary.error)
     return <ErrorPage message={todaySummary.error.message} />;
 
-  const loading = solveSettings.loading || todaySummary.loading;
+  if (books.error) return <ErrorPage message={books.error.message} />;
+
+  const loading =
+    solveSettings.loading || todaySummary.loading || books.loading;
+
+  const problemIds =
+    books.value?.items.flatMap((b) => b.problems.map((p) => p.problemId)) ?? [];
 
   return (
     <PageFoundationContainer>
@@ -73,7 +82,7 @@ export default function SolvePage() {
             />
           ) : (
             <SolveContainer
-              problemIds={['book1_problem1']}
+              problemIds={problemIds}
               solveSettings={solveSettingsState || solveSettings.value!}
               todaySolveCount={todaySummary.value!.numberOfAnswers}
             />
