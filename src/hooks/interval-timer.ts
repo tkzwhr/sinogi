@@ -29,7 +29,7 @@ export default function useIntervalTimer(
   const restart = useCallback(() => {
     timer.restart(addSeconds(new Date(), intervalInSec));
     return 1;
-  }, []);
+  }, [intervalInSec]);
   const pause = useCallback(timer.pause, []);
 
   return [

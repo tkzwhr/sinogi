@@ -56,7 +56,16 @@ export async function fetchTodaySummary(): Promise<DateSummary> {
 export async function fetchSolveSettings(): Promise<SolveSettings> {
   if (!tauriAvailable()) return Mock.delay(Mock.solveSettings);
 
-  return Mock.delay(Mock.solveSettings);
+  const settings = await Store.fetchSolveSettings();
+
+  return (
+    settings ?? {
+      scope: 'all',
+      selectedBooks: [],
+      quota: 0,
+      allottedTime: 0,
+    }
+  );
 }
 
 export async function storeSolveSettings(
@@ -67,7 +76,7 @@ export async function storeSolveSettings(
     return Promise.resolve();
   }
 
-  return Promise.resolve();
+  return Store.saveSolveSettings(solveSettings);
 }
 
 export async function openProblemView(problemId: Problem['problemId']) {

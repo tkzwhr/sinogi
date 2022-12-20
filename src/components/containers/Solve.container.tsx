@@ -56,6 +56,7 @@ export default function SolveContainer(props: Props) {
   };
 
   useEffect(() => {
+    const usesTimer = props.solveSettings.allottedTime > 0;
     switch (solveMode) {
       case 'opponentPlaying':
         setTimeout(() => {
@@ -67,22 +68,22 @@ export default function SolveContainer(props: Props) {
         break;
       case 'correctAnswered':
         incSolveCount();
-        intervalTimerFn.pause();
+        usesTimer && intervalTimerFn.pause();
         break;
       case 'answered':
         incSolveCount();
-        intervalTimerFn.pause();
+        usesTimer && intervalTimerFn.pause();
         break;
       case 'restart':
         nextProblem();
         problemFn.rewind();
-        intervalTimerFn.restart();
+        usesTimer && intervalTimerFn.restart();
         nextSolveMode();
         break;
       default:
         break;
     }
-  }, [solveMode]);
+  }, [solveMode, props.solveSettings]);
 
   if (sgfText.error) return <ErrorPage message={sgfText.error.message} />;
 

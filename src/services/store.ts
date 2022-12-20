@@ -1,8 +1,16 @@
-import { Book, BookWithProblems, Problem, RawProblem, SGFText } from '@/types';
+import {
+  Book,
+  BookWithProblems,
+  Problem,
+  RawProblem,
+  SGFText,
+  SolveSettings,
+} from '@/types';
 import Database from 'tauri-plugin-sql-api';
+import { Store } from 'tauri-plugin-sql-store';
 
 export async function fetchBooks(): Promise<BookWithProblems[]> {
-  const db = await connect();
+  const db = await connectDB();
 
   const result: any[] = await db.select(`
         SELECT b.book_id, b.name, p.problem_id, p.title, p.description
@@ -40,7 +48,7 @@ export async function fetchBooks(): Promise<BookWithProblems[]> {
 export async function fetchProblemSGF(
   problemId: Problem['problemId'],
 ): Promise<SGFText | undefined> {
-  const db = await connect();
+  const db = await connectDB();
 
   const result: any[] = await db.select(
     `
@@ -59,7 +67,7 @@ export async function fetchProblemSGF(
 }
 
 export async function storeBook(bookName: Book['name']): Promise<string> {
-  const db = await connect();
+  const db = await connectDB();
 
   const result = await db.execute(
     `
@@ -90,7 +98,7 @@ export async function storeProblem(
   bookId: Book['bookId'],
   rawProblem: RawProblem,
 ) {
-  const db = await connect();
+  const db = await connectDB();
 
   await db.execute(
     `
@@ -104,6 +112,35 @@ export async function storeProblem(
   );
 }
 
-async function connect(): Promise<Database> {
+export async function fetchSolveSettings(): Promise<SolveSettings | null> {
+  return await fetchFromKVS('SolveSettings');
+}
+
+export async function saveSolveSettings(solveSettings: SolveSettings) {
+  await storeToKVS('SolveSettings', solveSettings);
+}
+
+async function connectDB(): Promise<Database> {
   return Database.load('sqlite:sinogi.db');
+}
+
+async function fetchFromKVS<T>(key: string): Promise<T | null> {
+  const kvs = new Store('sinogi.conf');
+
+  try {
+    await kvs.load();
+  } catch (e: any) {
+    // create a file if not exists
+    await kvs.save();
+  }
+
+  return kvs.get(key);
+}
+
+async function storeToKVS(key: string, value: unknown): Promise<void> {
+  const kvs = new Store('sinogi.conf');
+
+  await kvs.set(key, value);
+
+  await kvs.save();
 }

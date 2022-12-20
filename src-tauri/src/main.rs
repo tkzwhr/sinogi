@@ -3,14 +3,17 @@
     windows_subsystem = "windows"
 )]
 
+use tauri::plugin::TauriPlugin;
 use tauri::{CustomMenuItem, Menu, MenuItem, Runtime, Submenu, WindowMenuEvent};
 use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
+use tauri_plugin_store::PluginBuilder;
 
 fn main() {
     tauri::Builder::default()
         .menu(enable_menu())
         .on_menu_event(menu_handler)
         .plugin(enable_sql_plugin())
+        .plugin(enable_store_plugin())
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -25,6 +28,10 @@ fn enable_sql_plugin<R: Runtime>() -> TauriSql<R> {
             kind: MigrationKind::Up,
         }],
     )
+}
+
+fn enable_store_plugin<R: Runtime>() -> TauriPlugin<R> {
+    PluginBuilder::default().build()
 }
 
 fn enable_menu() -> Menu {
