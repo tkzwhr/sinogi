@@ -7,7 +7,6 @@ import {
   getMove,
 } from '@/services/sabaki';
 import GoBoard from '@sabaki/go-board';
-// @ts-ignore
 import { stringifyVertex } from '@sabaki/sgf';
 import { Vertex } from '@sabaki/shudan';
 import { useCallback, useEffect, useMemo } from 'react';
@@ -98,7 +97,7 @@ export default function useProblem(
       const [x, y] = vertex;
       return {
         isCorrectRoute: boardState.ghostStoneMap?.[y][x]?.type === 'good',
-        isLastMove: gameTree.get(child.id).children.length === 0,
+        isLastMove: gameTree.get(child.id)?.children.length === 0,
       };
     },
     [gameTree, currentId],

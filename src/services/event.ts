@@ -1,5 +1,6 @@
 import { extractProblems } from '@/services/sabaki';
 import { storeBook, storeProblem } from '@/services/store';
+import { tauriAvailable } from '@/utils/tauri';
 import { open } from '@tauri-apps/api/dialog';
 import { Event, listen } from '@tauri-apps/api/event';
 import { readTextFile } from '@tauri-apps/api/fs';
@@ -12,6 +13,8 @@ const UpdateProgressEvent = createEvent('update_progress');
 export const updateProgressEvent = UpdateProgressEvent<number | null>();
 
 export async function listenBackendEvents() {
+  if (!tauriAvailable()) return;
+
   const navigatePage = listen('page', (event: Event<string>) =>
     navigatePageEvent.emitNavigatePage(event.payload),
   );
