@@ -13,7 +13,10 @@ import { useMemo } from 'react';
 type Props = {
   items: Problem[];
   solveSummary: ProblemSummary[];
-  onClickShowProblem: (_0: Problem['problemId']) => void;
+  onClickShowProblem: (
+    _0: Problem['problemId'],
+    _1?: string | undefined,
+  ) => void;
 };
 
 export default function BookProblems(props: Props) {
@@ -55,7 +58,9 @@ export default function BookProblems(props: Props) {
             <Cell>
               <ActionButton
                 isQuiet
-                onPress={() => props.onClickShowProblem(item.problemId)}
+                onPress={() =>
+                  props.onClickShowProblem(item.problemId, item.title)
+                }
               >
                 問題を見る
               </ActionButton>

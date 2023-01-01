@@ -178,7 +178,9 @@ export default function SolveContainer(props: Props) {
             <Button
               variant="primary"
               style="fill"
-              onPress={() => openProblemView(problemId!)}
+              onPress={() =>
+                openProblemView(problemId!, problem.gameInfo.gameName)
+              }
               isDisabled={
                 solveMode !== 'correctAnswered' &&
                 solveMode !== 'answered' &&

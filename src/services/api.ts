@@ -9,6 +9,7 @@ import {
   SolveSettings,
 } from '@/types';
 import { tauriAvailable } from '@/utils/tauri';
+import { invoke } from '@tauri-apps/api/tauri';
 
 export async function fetchBooks(): Promise<{ items: BookWithProblems[] }> {
   if (!tauriAvailable()) return Mock.delay({ items: Mock.bookWithProblems });
@@ -93,8 +94,14 @@ export async function storeSolveSettings(
   return Store.saveSolveSettings(solveSettings);
 }
 
-export async function openProblemView(problemId: Problem['problemId']) {
+export async function openProblemView(
+  problemId: Problem['problemId'],
+  title?: string | undefined,
+) {
   if (!tauriAvailable()) {
     window.open(`/problems/${problemId}`, 'problem', 'height=600,width=840');
+    return;
   }
+
+  await invoke('open_problem_view', { problemId, title: title ?? problemId });
 }
