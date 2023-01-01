@@ -4,7 +4,11 @@ import useIntervalTimer from '@/hooks/interval-timer';
 import useProblem from '@/hooks/problem';
 import { useRandomArray } from '@/hooks/random-array';
 import { ErrorPage } from '@/pages/Error.page';
-import { fetchProblemSGF, openProblemView } from '@/services/api';
+import {
+  fetchProblemSGF,
+  openProblemView,
+  storeGameHistory,
+} from '@/services/api';
 import { SolveSettings } from '@/types';
 import {
   ActionGroup,
@@ -67,10 +71,12 @@ export default function SolveContainer(props: Props) {
         }, 100);
         break;
       case 'correctAnswered':
+        storeGameHistory(problemId!, true).then();
         incSolveCount();
         usesTimer && intervalTimerFn.pause();
         break;
       case 'answered':
+        storeGameHistory(problemId!, false).then();
         incSolveCount();
         usesTimer && intervalTimerFn.pause();
         break;

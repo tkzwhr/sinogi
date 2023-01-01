@@ -1,20 +1,20 @@
 import * as Mock from '@/services/mock';
 import * as Store from '@/services/store';
 import {
-  Problem,
   BookProblemSummary,
   BookWithProblems,
   DateSummary,
-  SolveSettings,
+  Problem,
   SGFText,
+  SolveSettings,
 } from '@/types';
 import { tauriAvailable } from '@/utils/tauri';
 
 export async function fetchBooks(): Promise<{ items: BookWithProblems[] }> {
   if (!tauriAvailable()) return Mock.delay({ items: Mock.bookWithProblems });
 
-  const result = await Store.fetchBooks();
-  return { items: result };
+  const items = await Store.fetchBooks();
+  return { items };
 }
 
 export async function fetchBookProblemSummaries(): Promise<{
@@ -23,7 +23,8 @@ export async function fetchBookProblemSummaries(): Promise<{
   if (!tauriAvailable())
     return Mock.delay({ items: Mock.bookProblemSummaries });
 
-  return Mock.delay({ items: Mock.bookProblemSummaries });
+  const items = await Store.fetchBookProblemSummaries();
+  return { items };
 }
 
 export async function fetchProblemSGF(
@@ -44,13 +45,14 @@ export async function fetchDateSummaries(): Promise<{
 }> {
   if (!tauriAvailable()) return Mock.delay({ items: Mock.dateSummaries });
 
-  return Mock.delay({ items: Mock.dateSummaries });
+  const items = await Store.fetchDateSummaries();
+  return { items };
 }
 
 export async function fetchTodaySummary(): Promise<DateSummary> {
   if (!tauriAvailable()) return Mock.delay({ ...Mock.dateSummaries[0] });
 
-  return Mock.delay({ ...Mock.dateSummaries[0] });
+  return await Store.fetchTodayDateSummary();
 }
 
 export async function fetchSolveSettings(): Promise<SolveSettings> {
@@ -66,6 +68,18 @@ export async function fetchSolveSettings(): Promise<SolveSettings> {
       allottedTime: 0,
     }
   );
+}
+
+export async function storeGameHistory(
+  problemId: Problem['problemId'],
+  isCorrect: boolean,
+) {
+  if (!tauriAvailable()) {
+    console.debug(problemId, isCorrect);
+    return Promise.resolve();
+  }
+
+  return Store.saveGameHistory(problemId, isCorrect);
 }
 
 export async function storeSolveSettings(

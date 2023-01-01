@@ -1,11 +1,15 @@
 import {
   Book,
+  BookProblemSummary,
   BookWithProblems,
+  DateSummary,
   Problem,
   RawProblem,
   SGFText,
   SolveSettings,
 } from '@/types';
+import { format, parseISO } from 'date-fns';
+import nestedGroupBy from 'nested-groupby';
 import Database from 'tauri-plugin-sql-api';
 import { Store } from 'tauri-plugin-sql-store';
 
@@ -66,6 +70,80 @@ export async function fetchProblemSGF(
   };
 }
 
+export async function fetchBookProblemSummaries(): Promise<
+  BookProblemSummary[]
+> {
+  const db = await connectDB();
+
+  const result: any[] = await db.select(`
+        SELECT p.book_id, gh.problem_id, gh.is_correct
+        FROM game_histories gh
+                 INNER JOIN problems p ON gh.problem_id = p.problem_id;
+    `);
+
+  const grouped: Record<number, Record<number, any[]>> = nestedGroupBy(result, [
+    'book_id',
+    'problem_id',
+  ]);
+
+  return Object.entries(grouped).map(([k1, v1]) => ({
+    bookId: k1,
+    problemSummaries: Object.entries(v1).map(([k2, v2]) => ({
+      problemId: k2,
+      numberOfAnswers: v2.length,
+      numberOfCorrectAnswers: v2.reduce(
+        (acc, v) => (acc + v.is_correct ? 1 : 0),
+        0,
+      ),
+    })),
+  }));
+}
+
+export async function fetchDateSummaries(): Promise<DateSummary[]> {
+  const db = await connectDB();
+
+  const result: any[] = await db.select(`
+        SELECT gh.played_at, gh.is_correct FROM game_histories gh;
+    `);
+
+  const grouped: Record<string, any[]> = nestedGroupBy(result, ['played_at']);
+
+  return Object.entries(grouped).map(([k, v]) => ({
+    date: parseISO(k),
+    numberOfAnswers: v.length,
+    numberOfCorrectAnswers: v.reduce(
+      (acc, v) => (acc + v.is_correct ? 1 : 0),
+      0,
+    ),
+  }));
+}
+
+export async function fetchTodayDateSummary(): Promise<DateSummary> {
+  const today = new Date();
+
+  const db = await connectDB();
+
+  const result: any[] = await db.select(
+    `
+        SELECT gh.is_correct FROM game_histories gh WHERE gh.played_at = $1;
+    `,
+    [format(today, 'yyyy-MM-dd')],
+  );
+
+  return {
+    date: today,
+    numberOfAnswers: result.length,
+    numberOfCorrectAnswers: result.reduce(
+      (acc, v) => (acc + v.is_correct ? 1 : 0),
+      0,
+    ),
+  };
+}
+
+export async function fetchSolveSettings(): Promise<SolveSettings | null> {
+  return await fetchFromKVS('SolveSettings');
+}
+
 export async function storeBook(bookName: Book['name']): Promise<string> {
   const db = await connectDB();
 
@@ -106,14 +184,25 @@ export async function storeProblem(
             VALUES ($1, $2, $3, $4)
             ON CONFLICT (book_id, title) DO UPDATE
                 SET description = $3,
-                    sgf = $4;
+                    sgf         = $4;
         `,
     [bookId, rawProblem.title, rawProblem.description, rawProblem.sgfText],
   );
 }
 
-export async function fetchSolveSettings(): Promise<SolveSettings | null> {
-  return await fetchFromKVS('SolveSettings');
+export async function saveGameHistory(
+  problemId: Problem['problemId'],
+  isCorrect: boolean,
+) {
+  const db = await connectDB();
+
+  await db.execute(
+    `
+            INSERT INTO game_histories (problem_id, is_correct)
+            VALUES ($1, $2);
+        `,
+    [problemId, isCorrect ? 1 : 0],
+  );
 }
 
 export async function saveSolveSettings(solveSettings: SolveSettings) {

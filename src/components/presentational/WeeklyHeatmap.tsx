@@ -9,14 +9,15 @@ type Props = {
   quota: number;
 };
 
-const WEEKS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEKS = ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thu.', 'Fri.', 'Sat.'];
 
 export default function WeeklyHeatmap(props: Props) {
-  const numberOfItems = 7 * (props.weeks - 1) + new Date().getDay();
+  const today = new Date();
+  const numberOfItems = 7 * (props.weeks - 1) + today.getDay() + 1;
   const items: DateSummary[] = Array(numberOfItems)
     .fill(null)
     .map((_, i) => {
-      const date = subDays(new Date(), numberOfItems - i);
+      const date = subDays(today, numberOfItems - 1 - i);
       const data = props.items.find((item) => isSameDay(date, item.date));
       return (
         data ?? {
