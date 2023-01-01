@@ -82,6 +82,8 @@ export default function SolveContainer(props: Props) {
         break;
       case 'restart':
         nextProblem();
+      // fallthrough
+      case 'start':
         problemFn.rewind();
         usesTimer && intervalTimerFn.restart();
         nextSolveMode();
@@ -223,6 +225,7 @@ export default function SolveContainer(props: Props) {
 
 type SolveMode =
   | 'ready'
+  | 'start'
   | 'playing'
   | 'opponentPlaying'
   | 'correctAnswered'
@@ -236,7 +239,9 @@ function useSolveMode(): [SolveMode, () => void, (_0?: boolean) => void] {
     setSolveMode((prev) => {
       switch (prev) {
         case 'ready':
-          return 'restart';
+          return 'start';
+        case 'start':
+          return 'playing';
         case 'playing':
           return 'opponentPlaying';
         case 'opponentPlaying':
