@@ -3,6 +3,7 @@
     windows_subsystem = "windows"
 )]
 
+use tauri::api::dialog::message;
 use tauri::plugin::TauriPlugin;
 use tauri::{
     AppHandle, CustomMenuItem, Manager, Menu, MenuItem, Runtime, Submenu, Window, WindowBuilder,
@@ -55,24 +56,39 @@ fn enable_menu() -> Menu {
                     .accelerator("CmdOrCtrl+Shift+I"),
             )
             .add_native_item(MenuItem::Separator)
+            .add_item(CustomMenuItem::new("version", "バージョン情報..."))
+            .add_native_item(MenuItem::Separator)
             .add_native_item(MenuItem::Quit),
     );
     Menu::new().add_submenu(sinogi)
 }
 
-fn menu_handler<R: Runtime>(wme: WindowMenuEvent<R>) {
-    match wme.menu_item_id() {
+fn menu_handler<R: Runtime>(event: WindowMenuEvent<R>) {
+    match event.menu_item_id() {
         "page_root" => {
-            let _ = wme.window().emit("page", "/");
+            let _ = event.window().emit("page", "/");
         }
         "page_footprints" => {
-            let _ = wme.window().emit("page", "/footprints");
+            let _ = event.window().emit("page", "/footprints");
         }
         "page_books" => {
-            let _ = wme.window().emit("page", "/books");
+            let _ = event.window().emit("page", "/books");
         }
         "import_book" => {
-            let _ = wme.window().emit("import_book", ());
+            let _ = event.window().emit("import_book", ());
+        }
+        "version" => {
+            let app_handle = event.window().app_handle();
+            let msg = format!(
+                "{} {}",
+                app_handle.package_info().name,
+                app_handle.package_info().version
+            );
+            let _ = message(
+                Some(&event.window()),
+                &msg,
+                "詰碁練習アプリ\nDeveloped by Hiroki Takizawa",
+            );
         }
         _ => {}
     }
