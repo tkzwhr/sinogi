@@ -44,6 +44,9 @@ export default function SolveContainer(props: Props) {
   const [problem, problemFn] = useProblem(
     solveMode !== 'ready' && sgfText.value ? sgfText.value.sgfText : '',
   );
+  const [lastPlayerMove, setLastPlayerMove] = useState<[number, number] | null>(
+    null,
+  );
 
   const [intervalTimer, intervalTimerFn] = useIntervalTimer(
     props.solveSettings.allottedTime,
@@ -55,7 +58,12 @@ export default function SolveContainer(props: Props) {
   );
 
   const answer = (vertex: Vertex) => {
+    const [x, y] = vertex;
+    if (problem.boardState.board.signMap[y][x] !== 0) return;
     const result = problemFn.play(vertex);
+    if (result.isLastMove && !result.isCorrectRoute) {
+      setLastPlayerMove(vertex);
+    }
     result.isLastMove ? altSolveMode(result.isCorrectRoute) : nextSolveMode();
   };
 
@@ -81,6 +89,7 @@ export default function SolveContainer(props: Props) {
         usesTimer && intervalTimerFn.pause();
         break;
       case 'restart':
+        setLastPlayerMove(null);
         nextProblem();
       // fallthrough
       case 'start':
@@ -105,13 +114,23 @@ export default function SolveContainer(props: Props) {
     }
   };
 
+  let signMap = problem.boardState.board.signMap;
+  if (lastPlayerMove) {
+    const [x, y] = lastPlayerMove;
+    signMap = problem.boardState.board.signMap.map((column, c) =>
+      column.map((row, r) => {
+        return r === x && c === y ? problem.gameInfo.playerColor : row;
+      }),
+    );
+  }
+
   return (
     <Flex gap="size-200">
       <View position="relative">
         <BoundedGoban
           maxWidth={width - 336}
           maxHeight={height - 148}
-          signMap={problem.boardState.board.signMap}
+          signMap={signMap}
           markerMap={problem.boardState.markerMap}
           onVertexClick={(_: any, vertex: Vertex) =>
             solveMode === 'playing' && answer(vertex)

@@ -33,6 +33,7 @@ type TesujiMap = Record<number, boolean>;
 export type GameInfo = {
   gameName?: string;
   gameComment?: string;
+  playerColor: Stone;
 };
 
 export type BoardState = {
@@ -65,9 +66,19 @@ export function createGameTree(sgfText: string): GoGameTree {
 }
 
 export function getGameInfo(gameTree: GoGameTree): GameInfo {
+  const isBlack =
+    gameTree.root.children.find((c) => c.data.B?.[0] !== undefined) !==
+    undefined;
+  const isWhite =
+    gameTree.root.children.find((c) => c.data.W?.[0] !== undefined) !==
+    undefined;
+
+  if (isBlack && isWhite) throw 'First moves must be either black or white.';
+
   return {
     gameName: gameTree.root.data.GN?.[0],
     gameComment: gameTree.root.data.GC?.[0],
+    playerColor: isBlack ? 1 : -1,
   };
 }
 
