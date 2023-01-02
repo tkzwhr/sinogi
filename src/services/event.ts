@@ -1,5 +1,5 @@
-import { extractProblems } from '@/services/sabaki';
 import { storeBook, storeProblem } from '@/services/store';
+import { extractProblems } from '@/utils/sabaki';
 import { tauriAvailable } from '@/utils/tauri';
 import { open } from '@tauri-apps/api/dialog';
 import { Event, listen } from '@tauri-apps/api/event';

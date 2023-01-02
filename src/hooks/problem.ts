@@ -5,7 +5,7 @@ import {
   getBoardState,
   getGameInfo,
   getMove,
-} from '@/services/sabaki';
+} from '@/utils/sabaki';
 import GoBoard from '@sabaki/go-board';
 import { stringifyVertex } from '@sabaki/sgf';
 import { Vertex } from '@sabaki/shudan';

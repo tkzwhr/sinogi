@@ -208,42 +208,63 @@ function getAdded(node: GoNodeObject): PutPoint[] {
 }
 
 function getNextMoves(gameTree: GoGameTree, node: GoNodeObject): NextPoint[] {
+  const generateTesujiMap = (n: GoNodeObject): TesujiMap => {
+    const childrenSummary = n.children.reduce(
+      (acc, v) => {
+        const isTesuji = getIsTesuji(v);
+        return {
+          hasTesuji: acc.hasTesuji || isTesuji === true,
+          hasBadMove: acc.hasBadMove || isTesuji === false,
+          hasNull: acc.hasNull || isTesuji === null,
+        };
+      },
+      { hasTesuji: false, hasBadMove: false, hasNull: false },
+    );
+
+    let isCorrectRouteImplicitly = true;
+    if (childrenSummary.hasNull) {
+      if (childrenSummary.hasTesuji && childrenSummary.hasBadMove)
+        throw 'Children have tesuji and bad move. Children can have only one side.';
+
+      isCorrectRouteImplicitly = !childrenSummary.hasTesuji;
+    }
+
+    return n.children.reduce(
+      (p, c) =>
+        Object.assign(p, {
+          [c.id]: getIsTesuji(c) ?? isCorrectRouteImplicitly,
+        }),
+      {} as TesujiMap,
+    );
+  };
+
   const treeNodes = Array.from<GoNodeObject>(
     gameTree.listNodesVertically(node.id, -1, {}),
   ).reverse();
-  const tesujiMap = treeNodes.reduce(
-    (prev, n) => {
-      if (n.id in prev && !prev[n.id]) return prev;
+  const isCorrectRoute = treeNodes.reduce((acc, n) => {
+    // if it becomes false explicitly even once, never becomes true
+    if (!acc) return false;
 
-      const children = n.children.reduce(
-        (p, c) => Object.assign(p, { [c.id]: getIsTesuji(c) }),
-        {} as Record<number, boolean | null>,
-      );
-      const containsChildrenValues = (matcher: boolean | null) =>
-        Object.values(children).find((v) => v === matcher) !== undefined;
+    // skip root node
+    if (n.parentId === null) return acc;
 
-      let tesujiImplicitly = true;
-      if (containsChildrenValues(null)) {
-        tesujiImplicitly = containsChildrenValues(true);
-        const hasBadMove = containsChildrenValues(false);
+    const parent = gameTree.get(n.parentId);
+    if (!parent) return acc;
 
-        if (tesujiImplicitly && hasBadMove)
-          throw 'Children have tesuji and bad move. Children can have only one side.';
-      }
+    return generateTesujiMap(parent)[n.id];
+  }, true);
 
-      return Object.entries(children).reduce(
-        (p, [key, value]) =>
-          Object.assign(p, { [key]: value ?? !tesujiImplicitly }),
-        prev,
-      );
-    },
-    { 0: true } as TesujiMap,
-  );
-
+  const childrenTesujiMap = generateTesujiMap(node);
   return node.children.flatMap((n) => {
     const move = getMove(n);
-    const isCorrectRoute = Object.keys(tesujiMap).length > 0 && tesujiMap[n.id];
-    return move ? [{ vertex: move.vertex, isCorrectRoute }] : [];
+    if (!move) return [];
+
+    return [
+      {
+        vertex: move.vertex,
+        isCorrectRoute: isCorrectRoute && childrenTesujiMap[n.id],
+      },
+    ];
   });
 }
 
