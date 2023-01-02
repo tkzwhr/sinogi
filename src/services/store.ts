@@ -223,13 +223,19 @@ export async function deleteBook(bookId: Book['bookId']): Promise<void> {
   );
 
   if (targetProblems.length > 0) {
+    /* Note: In current sqlx, cannot bind values to `IN` clause.
+             Have no choice but to create query manually.
+             cf. https://github.com/launchbadge/sqlx/blob/main/FAQ.md#how-can-i-do-a-select--where-foo-in--query
+     */
+    const targetProblemIdsString = targetProblems
+      .map((tp) => tp.problem_id)
+      .join(',');
     await db.execute(
       `
                 DELETE
                 FROM game_histories
-                WHERE problem_id IN ('$1');
+                WHERE problem_id IN (${targetProblemIdsString});
             `,
-      [targetProblems.map((tp) => tp.problem_id).join("','")],
     );
   }
 

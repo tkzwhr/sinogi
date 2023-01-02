@@ -1,3 +1,4 @@
+import { refreshBooksEvent } from '@/services/event';
 import * as Mock from '@/services/mock';
 import * as Store from '@/services/store';
 import {
@@ -103,7 +104,8 @@ export async function deleteBook(bookId: Book['bookId']): Promise<void> {
     return Promise.resolve();
   }
 
-  return Store.deleteBook(bookId);
+  await Store.deleteBook(bookId);
+  refreshBooksEvent.emitRefreshBooks();
 }
 
 export async function openProblemView(

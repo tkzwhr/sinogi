@@ -1,6 +1,6 @@
 import BookList from '@/components/presentational/BookList';
 import BookProblems from '@/components/presentational/BookProblems';
-import { openProblemView } from '@/services/api';
+import { openProblemView, deleteBook } from '@/services/api';
 import { importSGF } from '@/services/event';
 import { Book, BookProblemSummary, BookWithProblems } from '@/types';
 import { ActionGroup, Flex, Item } from '@adobe/react-spectrum';
@@ -16,10 +16,6 @@ export default function BooksContainer(props: Props) {
     Book['bookId'] | undefined
   >();
 
-  const confirmDeleteBook = (bookId: Book['bookId']) => {
-    console.log(`delete: ${bookId}`);
-  };
-
   const book = props.bookWithProblems.find((i) => i.bookId === selectedBook);
   const bookProblemSummary =
     props.bookProblemSummaries.find((i) => i.bookId === selectedBook)
@@ -32,7 +28,7 @@ export default function BooksContainer(props: Props) {
           items={props.bookWithProblems}
           selectedBook={selectedBook}
           onSelectBook={setSelectedBook}
-          onDeleteBook={confirmDeleteBook}
+          onDeleteBook={deleteBook}
         />
         <ActionGroup
           onAction={importSGF}

@@ -2,13 +2,31 @@ import BooksContainer from '@/components/containers/Books.container';
 import PageFoundationContainer from '@/components/containers/PageFoundation.container';
 import { ErrorPage } from '@/pages/Error.page';
 import { fetchBookProblemSummaries, fetchBooks } from '@/services/api';
+import { refreshBooksEvent } from '@/services/event';
 import { ProgressCircle } from '@adobe/react-spectrum';
-import { useAsync } from 'react-use';
+import { useEffect } from 'react';
+import { useAsyncFn } from 'react-use';
 
 export default function BooksPage() {
-  const books = useAsync(fetchBooks);
+  const [books, invokeFetchBooks] = useAsyncFn(fetchBooks, [], {
+    loading: true,
+  });
 
-  const bookProblemSummaries = useAsync(fetchBookProblemSummaries);
+  const [bookProblemSummaries, invokeFetchBookProblemSummaries] = useAsyncFn(
+    fetchBookProblemSummaries,
+    [],
+    { loading: true },
+  );
+
+  useEffect(() => {
+    invokeFetchBooks().then();
+    invokeFetchBookProblemSummaries().then();
+  }, []);
+
+  refreshBooksEvent.useRefreshBooksListener(() => {
+    invokeFetchBooks().then();
+    invokeFetchBookProblemSummaries().then();
+  });
 
   if (books.error) return <ErrorPage message={books.error.message} />;
 

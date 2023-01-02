@@ -6,11 +6,11 @@ import { Event, listen } from '@tauri-apps/api/event';
 import { readTextFile } from '@tauri-apps/api/fs';
 import { createEvent } from 'react-event-hook';
 
-const NavigatePageEvent = createEvent('navigate_page');
-export const navigatePageEvent = NavigatePageEvent<string>();
-
-const UpdateProgressEvent = createEvent('update_progress');
-export const updateProgressEvent = UpdateProgressEvent<number | null>();
+export const navigatePageEvent = createEvent('navigate_page')<string>();
+export const updateProgressEvent = createEvent('update_progress')<
+  number | null
+>();
+export const refreshBooksEvent = createEvent('refresh_books')();
 
 export async function listenBackendEvents() {
   if (!tauriAvailable()) return;
@@ -60,5 +60,6 @@ export async function importSGF() {
   updateProgressEvent.emitUpdateProgress(100);
   setTimeout(() => {
     updateProgressEvent.emitUpdateProgress(null);
+    refreshBooksEvent.emitRefreshBooks();
   }, 1000);
 }

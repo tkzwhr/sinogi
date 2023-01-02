@@ -1,6 +1,7 @@
 import PageFoundationContainer from '@/components/containers/PageFoundation.container';
 import SolveContainer from '@/components/containers/Solve.container';
 import SolveSettingsModal from '@/components/containers/SolveSettings.modal';
+import EmptyBook from '@/components/presentational/EmptyBook';
 import { ErrorPage } from '@/pages/Error.page';
 import {
   fetchBooks,
@@ -8,6 +9,7 @@ import {
   fetchTodaySummary,
   storeSolveSettings,
 } from '@/services/api';
+import { refreshBooksEvent } from '@/services/event';
 import { SolveSettings } from '@/types';
 import {
   ActionButton,
@@ -17,15 +19,23 @@ import {
   View,
 } from '@adobe/react-spectrum';
 import Settings from '@spectrum-icons/workflow/Settings';
-import { useState } from 'react';
-import { useAsync } from 'react-use';
+import { useEffect, useState } from 'react';
+import { useAsync, useAsyncFn } from 'react-use';
 
 export default function SolvePage() {
   const solveSettings = useAsync(fetchSolveSettings);
 
   const todaySummary = useAsync(fetchTodaySummary);
 
-  const books = useAsync(fetchBooks);
+  const [books, invokeFetchBooks] = useAsyncFn(fetchBooks, [], {
+    loading: true,
+  });
+
+  useEffect(() => {
+    invokeFetchBooks().then();
+  }, []);
+
+  refreshBooksEvent.useRefreshBooksListener(invokeFetchBooks);
 
   const [solveSettingsState, setSolveSettingsState] = useState<
     SolveSettings | undefined
@@ -80,6 +90,8 @@ export default function SolvePage() {
               size="L"
               isIndeterminate
             />
+          ) : problemIds.length === 0 ? (
+            <EmptyBook />
           ) : (
             <SolveContainer
               problemIds={problemIds}
