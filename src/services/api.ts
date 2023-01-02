@@ -1,6 +1,7 @@
 import * as Mock from '@/services/mock';
 import * as Store from '@/services/store';
 import {
+  Book,
   BookProblemSummary,
   BookWithProblems,
   DateSummary,
@@ -76,7 +77,9 @@ export async function storeGameHistory(
   isCorrect: boolean,
 ) {
   if (!tauriAvailable()) {
-    console.debug(problemId, isCorrect);
+    console.debug(
+      `storeGameHistory: ${JSON.stringify({ problemId, isCorrect })}`,
+    );
     return Promise.resolve();
   }
 
@@ -87,11 +90,20 @@ export async function storeSolveSettings(
   solveSettings: SolveSettings,
 ): Promise<void> {
   if (!tauriAvailable()) {
-    console.debug(solveSettings);
+    console.debug(`storeSolveSettings: ${JSON.stringify(solveSettings)}`);
     return Promise.resolve();
   }
 
   return Store.saveSolveSettings(solveSettings);
+}
+
+export async function deleteBook(bookId: Book['bookId']): Promise<void> {
+  if (!tauriAvailable()) {
+    console.debug(`deleteBook: ${JSON.stringify(bookId)}`);
+    return Promise.resolve();
+  }
+
+  return Store.deleteBook(bookId);
 }
 
 export async function openProblemView(

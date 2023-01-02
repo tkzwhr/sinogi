@@ -37,9 +37,7 @@ export default function SolveSettingsModal(props: Props) {
     set('selectedBooks', Array.from(keys as Set<string>));
   };
 
-  const emit = () => {
-    props.onUpdate(solveSettings);
-  };
+  const emit = () => props.onUpdate(solveSettings);
 
   return (
     <Dialog>

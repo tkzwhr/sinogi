@@ -2,7 +2,6 @@ import SolveCountIndicator from '@/components/presentational/SolveCountIndicator
 import TimeIndicator from '@/components/presentational/TimeIndicator';
 import useIntervalTimer from '@/hooks/interval-timer';
 import useProblem from '@/hooks/problem';
-import { useRandomArray } from '@/hooks/random-array';
 import { ErrorPage } from '@/pages/Error.page';
 import {
   fetchProblemSGF,
@@ -10,6 +9,7 @@ import {
   storeGameHistory,
 } from '@/services/api';
 import { SolveSettings } from '@/types';
+import { randomize } from '@/utils/randomize';
 import {
   ActionGroup,
   Button,
@@ -38,7 +38,11 @@ export default function SolveContainer(props: Props) {
 
   const [solveMode, nextSolveMode, altSolveMode] = useSolveMode();
 
-  const [problemId, nextProblem] = useRandomArray(props.problemIds);
+  const [problemId, setProblemId] = useState(randomize(props.problemIds));
+  const nextProblem = useCallback(
+    () => setProblemId(randomize(props.problemIds)),
+    [props.problemIds],
+  );
 
   const sgfText = useAsync(() => fetchProblemSGF(problemId!), [problemId]);
   const [problem, problemFn] = useProblem(
@@ -60,6 +64,7 @@ export default function SolveContainer(props: Props) {
   const answer = (vertex: Vertex) => {
     const [x, y] = vertex;
     if (problem.boardState.board.signMap[y][x] !== 0) return;
+
     const result = problemFn.play(vertex);
     if (result.isLastMove && !result.isCorrectRoute) {
       setLastPlayerMove(vertex);

@@ -3,7 +3,6 @@ import BookProblems from '@/components/presentational/BookProblems';
 import { openProblemView } from '@/services/api';
 import { importSGF } from '@/services/event';
 import { Book, BookProblemSummary, BookWithProblems } from '@/types';
-import { tauriAvailable } from '@/utils/tauri';
 import { ActionGroup, Flex, Item } from '@adobe/react-spectrum';
 import { useState } from 'react';
 
@@ -16,15 +15,6 @@ export default function BooksContainer(props: Props) {
   const [selectedBook, setSelectedBook] = useState<
     Book['bookId'] | undefined
   >();
-
-  const selectFile = () => {
-    if (!tauriAvailable()) {
-      console.log('Import button clicked.');
-      return;
-    }
-
-    importSGF().then();
-  };
 
   const confirmDeleteBook = (bookId: Book['bookId']) => {
     console.log(`delete: ${bookId}`);
@@ -45,7 +35,7 @@ export default function BooksContainer(props: Props) {
           onDeleteBook={confirmDeleteBook}
         />
         <ActionGroup
-          onAction={selectFile}
+          onAction={importSGF}
           defaultSelectedKeys="all"
           selectionMode="multiple"
           disallowEmptySelection

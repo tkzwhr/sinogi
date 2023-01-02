@@ -24,6 +24,11 @@ export async function listenBackendEvents() {
 }
 
 export async function importSGF() {
+  if (!tauriAvailable()) {
+    console.debug('Import SGF');
+    return;
+  }
+
   const selectedFile = (await open({
     filters: [
       {

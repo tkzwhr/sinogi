@@ -27,7 +27,8 @@
     "react-timer-hook": "^3.0.5",
     "react-use": "^17.4.0",
     "tauri-plugin-sql-api": "github:tauri-apps/tauri-plugin-sql",
-    "tauri-plugin-sql-store": "github:tauri-apps/tauri-plugin-store"
+    "tauri-plugin-sql-store": "github:tauri-apps/tauri-plugin-store",
+    "vitest": "^0.26.3"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.16.5",

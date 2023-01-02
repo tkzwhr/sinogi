@@ -27,9 +27,7 @@ export default function BookList(props: Props) {
     props.onSelectBook(Array.from(keys as Set<string>)[0]);
   };
 
-  const deleteBook = (bookId: Book['bookId']) => {
-    props.onDeleteBook(bookId);
-  };
+  const deleteBook = (bookId: Book['bookId']) => props.onDeleteBook(bookId);
 
   const emptyState = () => {
     return (

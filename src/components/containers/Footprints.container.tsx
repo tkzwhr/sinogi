@@ -12,6 +12,7 @@ export default function FootprintsContainer(props: Props) {
   const [displayMode, setDisplayMode] = useState<
     'numberOfAnswers' | 'accuracy'
   >('numberOfAnswers');
+
   const updateDisplayMode = (key: string) => {
     if (key === 'numberOfAnswers') {
       setDisplayMode('numberOfAnswers');
