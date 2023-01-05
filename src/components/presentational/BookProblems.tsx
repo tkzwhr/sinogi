@@ -14,8 +14,8 @@ type Props = {
   items: Problem[];
   solveSummary: ProblemSummary[];
   onClickShowProblem: (
-    _0: Problem['problemId'],
-    _1?: string | undefined,
+    problemId: Problem['problemId'],
+    title?: string | undefined,
   ) => void;
 };
 

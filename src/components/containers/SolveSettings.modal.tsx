@@ -18,7 +18,7 @@ import { useAsync, useMap } from 'react-use';
 
 type Props = {
   solveSettings: SolveSettings;
-  onUpdate: (_0: SolveSettings) => void;
+  onUpdate: (value: SolveSettings) => void;
 };
 
 export default function SolveSettingsModal(props: Props) {

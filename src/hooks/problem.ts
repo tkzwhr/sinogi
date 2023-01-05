@@ -26,7 +26,7 @@ type ProblemFn = {
   rewind: () => void;
   undo: () => void;
   redo: () => void;
-  play: (_0: Vertex) => PlayResult;
+  play: (vertex: Vertex) => PlayResult;
   randomPlay: () => PlayResult;
 };
 

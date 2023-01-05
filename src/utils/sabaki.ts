@@ -85,7 +85,7 @@ export function getGameInfo(gameTree: GoGameTree): GameInfo {
 export function getBoardState(
   gameTree: GoGameTree,
   id: number,
-  boardCache?: (_0: number) => GoBoard | undefined,
+  boardCache?: (nodeId: number) => GoBoard | undefined,
 ): BoardState | null {
   const node = gameTree.get(id);
   if (!node) return null;

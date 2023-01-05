@@ -259,7 +259,11 @@ type SolveMode =
   | 'timedOut'
   | 'restart';
 
-function useSolveMode(): [SolveMode, () => void, (_0?: boolean) => void] {
+function useSolveMode(): [
+  SolveMode,
+  () => void,
+  (isCorrect?: boolean) => void,
+] {
   const [solveMode, setSolveMode] = useState<SolveMode>('ready');
   const next = useCallback(() => {
     setSolveMode((prev) => {

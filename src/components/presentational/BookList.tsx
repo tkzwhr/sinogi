@@ -7,9 +7,9 @@ import { Key } from 'react';
 type Props = {
   items: Book[];
   selectedBook: Book['bookId'] | undefined;
-  onSelectBook: (_0: Book['bookId']) => void;
+  onSelectBook: (bookId: Book['bookId']) => void;
 
-  onDeleteBook: (_0: Book['bookId']) => void;
+  onDeleteBook: (bookId: Book['bookId']) => void;
 };
 
 export default function BookList(props: Props) {
