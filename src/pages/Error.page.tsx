@@ -1,11 +1,4 @@
-import PageFoundationContainer from '@/components/containers/PageFoundation.container';
-import {
-  Content,
-  Heading,
-  IllustratedMessage,
-  Text,
-} from '@adobe/react-spectrum';
-import NotFound from '@spectrum-icons/illustrations/NotFound';
+import { Result, Typography } from 'antd';
 
 type Props = {
   type?: 404;
@@ -16,21 +9,15 @@ export function ErrorPage(props: Props) {
   switch (props.type) {
     case 404:
       return (
-        <PageFoundationContainer>
-          <IllustratedMessage>
-            <NotFound />
-            <Heading>NOT FOUND</Heading>
-            <Content>{props.message}</Content>
-          </IllustratedMessage>
-        </PageFoundationContainer>
+        <Result
+          status="404"
+          title="ページが見つかりません"
+          subTitle={props.message}
+        />
       );
     default:
       break;
   }
 
-  return (
-    <PageFoundationContainer>
-      <Text>{props.message}</Text>
-    </PageFoundationContainer>
-  );
+  return <Typography.Text>{props.message}</Typography.Text>;
 }

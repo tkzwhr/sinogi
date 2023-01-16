@@ -10,21 +10,9 @@ import {
 } from '@/services/api';
 import { SolveSettings } from '@/types';
 import { randomize } from '@/utils/randomize';
-import {
-  ActionGroup,
-  Button,
-  Flex,
-  Item,
-  Text,
-  View,
-} from '@adobe/react-spectrum';
 import { BoundedGoban, Vertex } from '@sabaki/shudan';
-import AlertCircleFilled from '@spectrum-icons/workflow/AlertCircleFilled';
-import CheckmarkCircle from '@spectrum-icons/workflow/CheckmarkCircle';
-import Launch from '@spectrum-icons/workflow/Launch';
-import OpenInLight from '@spectrum-icons/workflow/OpenInLight';
-import Play from '@spectrum-icons/workflow/Play';
-import { Key, useCallback, useEffect, useState } from 'react';
+import { Button, Col, notification, Row, Space } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
 import { useAsync, useCounter, useWindowSize } from 'react-use';
 
 type Props = {
@@ -35,6 +23,7 @@ type Props = {
 
 export default function SolveContainer(props: Props) {
   const { width, height } = useWindowSize();
+  const [api, contextHolder] = notification.useNotification();
 
   const [solveMode, nextSolveMode, altSolveMode] = useSolveMode();
 
@@ -87,11 +76,16 @@ export default function SolveContainer(props: Props) {
         storeGameHistory(problemId!, true).then();
         incSolveCount();
         usesTimer && intervalTimerFn.pause();
+        api.success({ message: '正解！', placement: 'topLeft' });
         break;
       case 'answered':
         storeGameHistory(problemId!, false).then();
         incSolveCount();
         usesTimer && intervalTimerFn.pause();
+        api.error({ message: '残念...', placement: 'topLeft' });
+        break;
+      case 'timedOut':
+        api.warning({ message: '時間切れ', placement: 'topLeft' });
         break;
       case 'restart':
         setLastPlayerMove(null);
@@ -109,14 +103,8 @@ export default function SolveContainer(props: Props) {
 
   if (sgfText.error) return <ErrorPage message={sgfText.error.message} />;
 
-  const action = (key: Key) => {
-    switch (key) {
-      case 'next':
-        nextSolveMode();
-        break;
-      default:
-        break;
-    }
+  const next = () => {
+    nextSolveMode();
   };
 
   let signMap = problem.boardState.board.signMap;
@@ -130,122 +118,69 @@ export default function SolveContainer(props: Props) {
   }
 
   return (
-    <Flex gap="size-200">
-      <View position="relative">
-        <BoundedGoban
-          maxWidth={width - 336}
-          maxHeight={height - 148}
-          signMap={signMap}
-          markerMap={problem.boardState.markerMap}
-          onVertexClick={(_: any, vertex: Vertex) =>
-            solveMode === 'playing' && answer(vertex)
-          }
-        />
-        {solveMode === 'correctAnswered' && (
-          <View
-            UNSAFE_className="absolute-center"
-            backgroundColor="positive"
-            padding="size-200"
-            borderRadius="regular"
+    <>
+      <Row gutter={[16, 16]}>
+        <Col>
+          <BoundedGoban
+            maxWidth={width - 48}
+            maxHeight={height - 48}
+            signMap={signMap}
+            markerMap={problem.boardState.markerMap}
+            onVertexClick={(_: any, vertex: Vertex) =>
+              solveMode === 'playing' && answer(vertex)
+            }
+          />
+        </Col>
+        <Col style={{ maxWidth: '360px' }}>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'space-between',
+              gap: '64px',
+              height: '100%',
+            }}
           >
-            <Flex gap="size-100" alignItems="center">
-              <CheckmarkCircle aria-label="正解" size="M" />
-              <Text>正解！</Text>
-            </Flex>
-          </View>
-        )}
-        {solveMode === 'answered' && (
-          <View
-            UNSAFE_className="absolute-center"
-            backgroundColor="negative"
-            padding="size-200"
-            borderRadius="regular"
-          >
-            <Flex gap="size-100" alignItems="center">
-              <AlertCircleFilled aria-label="残念" size="M" />
-              <Text>残念...</Text>
-            </Flex>
-          </View>
-        )}
-        {solveMode === 'timedOut' && (
-          <View
-            UNSAFE_className="absolute-center"
-            backgroundColor="notice"
-            padding="size-200"
-            borderRadius="regular"
-          >
-            <Flex gap="size-100" alignItems="center">
-              <AlertCircleFilled aria-label="時間切れ" size="M" />
-              <Text>時間切れ</Text>
-            </Flex>
-          </View>
-        )}
-      </View>
-      <View backgroundColor="gray-200" padding="size-100">
-        {/* Info, Actions */}
-        <Flex
-          direction="column"
-          width="size-3000"
-          height="100%"
-          justifyContent="space-between"
-        >
-          <Flex direction="column" gap="size-200">
-            <TimeIndicator
-              allottedTime={props.solveSettings.allottedTime}
-              value={intervalTimer.rate}
-              time={intervalTimer.time}
-            />
-            <SolveCountIndicator
-              solveCount={solveCount}
-              quota={props.solveSettings.quota}
-            />
+            <Space direction="vertical" size="large">
+              <TimeIndicator
+                allottedTime={props.solveSettings.allottedTime}
+                value={intervalTimer.rate}
+                time={intervalTimer.time}
+              />
+              <SolveCountIndicator
+                solveCount={solveCount}
+                quota={props.solveSettings.quota}
+              />
+              <Button
+                disabled={
+                  solveMode !== 'correctAnswered' &&
+                  solveMode !== 'answered' &&
+                  solveMode !== 'timedOut'
+                }
+                onClick={() =>
+                  openProblemView(problemId!, problem.gameInfo.gameName)
+                }
+              >
+                答えを確認する
+              </Button>
+            </Space>
             <Button
-              variant="primary"
-              style="fill"
-              onPress={() =>
-                openProblemView(problemId!, problem.gameInfo.gameName)
-              }
-              isDisabled={
+              type="primary"
+              disabled={
+                solveMode !== 'ready' &&
                 solveMode !== 'correctAnswered' &&
                 solveMode !== 'answered' &&
                 solveMode !== 'timedOut'
               }
+              onClick={next}
             >
-              <OpenInLight />
-              <Text>答えを確認する</Text>
+              {solveMode === 'ready' ? 'スタート' : '次の問題へ'}
             </Button>
-          </Flex>
-          {solveMode !== 'ready' ? (
-            <ActionGroup
-              density="compact"
-              orientation="vertical"
-              isDisabled={
-                solveMode !== 'correctAnswered' &&
-                solveMode !== 'answered' &&
-                solveMode !== 'timedOut'
-              }
-              onAction={action}
-            >
-              <Item key="next" aria-label="次の問題へ">
-                <Play />
-                <Text>次の問題へ</Text>
-              </Item>
-            </ActionGroup>
-          ) : (
-            <ActionGroup
-              density="compact"
-              orientation="vertical"
-              onAction={action}
-            >
-              <Item key="next" aria-label="スタート">
-                <Launch />
-                <Text>スタート</Text>
-              </Item>
-            </ActionGroup>
-          )}
-        </Flex>
-      </View>
-    </Flex>
+          </div>
+        </Col>
+      </Row>
+      {contextHolder}
+    </>
   );
 }
 

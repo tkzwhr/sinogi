@@ -1,17 +1,9 @@
 import useProblem from '@/hooks/problem';
-import {
-  ActionGroup,
-  Flex,
-  Item,
-  LabeledValue,
-  Text,
-  View,
-} from '@adobe/react-spectrum';
+import FastBackwardOutlined from '@ant-design/icons/FastBackwardOutlined';
+import LeftOutlined from '@ant-design/icons/LeftOutlined';
+import RightOutlined from '@ant-design/icons/RightOutlined';
 import { BoundedGoban, Vertex } from '@sabaki/shudan';
-import Redo from '@spectrum-icons/workflow/Redo';
-import Rewind from '@spectrum-icons/workflow/Rewind';
-import Undo from '@spectrum-icons/workflow/Undo';
-import { Key } from 'react';
+import { Button, Col, Row, Space, Typography } from 'antd';
 import { useWindowSize } from 'react-use';
 
 type Props = {
@@ -23,78 +15,60 @@ export default function ViewerContainer(props: Props) {
 
   const [problem, problemFn] = useProblem(props.sgfText);
 
-  const action = (key: Key) => {
-    switch (key) {
-      case 'rewind':
-        problemFn.rewind();
-        break;
-      case 'undo':
-        problemFn.undo();
-        break;
-      case 'redo':
-        problemFn.redo();
-        break;
-      default:
-        break;
-    }
-  };
-
   return (
-    <Flex gap="size-200">
-      {/* Board, InfoPanel */}
-      <View>
+    <Row gutter={[16, 16]}>
+      <Col>
         <BoundedGoban
-          maxWidth={width - 304}
-          maxHeight={height - 32}
+          maxWidth={width - 48}
+          maxHeight={height - 48}
           signMap={problem.boardState.board.signMap}
           markerMap={problem.boardState.markerMap}
           ghostStoneMap={problem.boardState.ghostStoneMap}
           onVertexClick={(_: any, vertex: Vertex) => problemFn.play(vertex)}
         />
-      </View>
-      <View backgroundColor="gray-200" padding="size-100">
-        {/* Info, Actions */}
-        <Flex
-          direction="column"
-          width="size-3000"
-          height="100%"
-          justifyContent="space-between"
+      </Col>
+      <Col style={{ maxWidth: '360px' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            gap: '64px',
+            height: '100%',
+          }}
         >
-          <Flex direction="column" gap="size-200" width="size-3000">
+          <Space direction="vertical">
             {problem.gameInfo.gameName && (
-              <LabeledValue
-                label="タイトル"
-                value={problem.gameInfo.gameName}
-              />
+              <>
+                <Typography.Text strong>タイトル</Typography.Text>
+                <Typography.Text type="secondary">
+                  {problem.gameInfo.gameName}
+                </Typography.Text>
+              </>
             )}
             {problem.gameInfo.gameComment && (
-              <LabeledValue label="概要" value={problem.gameInfo.gameComment} />
+              <>
+                <Typography.Text strong>概要</Typography.Text>
+                <Typography.Text type="secondary">
+                  {problem.gameInfo.gameComment}
+                </Typography.Text>
+              </>
             )}
-            <LabeledValue
-              label="コメント"
-              value={problem.boardState?.comment ?? ''}
+            <Typography.Text strong>コメント</Typography.Text>
+            <Typography.Text type="secondary">
+              {problem.boardState?.comment ?? ''}
+            </Typography.Text>
+          </Space>
+          <Space.Compact block>
+            <Button
+              icon={<FastBackwardOutlined />}
+              onClick={problemFn.rewind}
             />
-          </Flex>
-          <ActionGroup
-            density="compact"
-            orientation="vertical"
-            onAction={action}
-          >
-            <Item key="rewind" aria-label="最初に戻す">
-              <Rewind />
-              <Text>最初に戻す</Text>
-            </Item>
-            <Item key="undo" aria-label="1手戻す">
-              <Undo />
-              <Text>1手戻す</Text>
-            </Item>
-            <Item key="redo" aria-label="1手進める">
-              <Redo />
-              <Text>1手進める</Text>
-            </Item>
-          </ActionGroup>
-        </Flex>
-      </View>
-    </Flex>
+            <Button icon={<LeftOutlined />} onClick={problemFn.undo} />
+            <Button icon={<RightOutlined />} onClick={problemFn.redo} />
+          </Space.Compact>
+        </div>
+      </Col>
+    </Row>
   );
 }

@@ -1,14 +1,45 @@
 import { Problem, ProblemSummary } from '@/types';
-import {
-  ActionButton,
-  Cell,
-  Column,
-  Row,
-  TableBody,
-  TableHeader,
-  TableView,
-} from '@adobe/react-spectrum';
+import ExportOutlined from '@ant-design/icons/ExportOutlined';
+import { Button, Table } from 'antd';
+import { ColumnsType } from 'antd/es/table';
 import { useMemo } from 'react';
+
+type DataType = {
+  key: string;
+  title: string;
+  description?: string;
+  accuracy: string;
+  view: () => void;
+};
+
+const columns: ColumnsType<DataType> = [
+  {
+    title: '',
+    key: 'view',
+    width: 48,
+    render: (_, record) => (
+      <Button
+        icon={<ExportOutlined />}
+        type="text"
+        shape="circle"
+        onClick={record.view}
+      />
+    ),
+  },
+  {
+    title: 'タイトル',
+    dataIndex: 'title',
+  },
+  {
+    title: '説明',
+    dataIndex: 'description',
+  },
+  {
+    title: '正答率',
+    dataIndex: 'accuracy',
+    align: 'right',
+  },
+];
 
 type Props = {
   items: Problem[];
@@ -20,7 +51,7 @@ type Props = {
 };
 
 export default function BookProblems(props: Props) {
-  const mergedItems = useMemo(() => {
+  const data: DataType[] = useMemo(() => {
     return props.items.map((item) => {
       const solveSummary = props.solveSummary.find(
         (ss) => ss.problemId === item.problemId,
@@ -34,43 +65,19 @@ export default function BookProblems(props: Props) {
         : '-%';
       return {
         ...item,
-        id: item.problemId,
+        key: item.problemId,
         accuracy,
+        view: () => props.onClickShowProblem(item.problemId, item.title),
       };
     });
   }, [props]);
 
   return (
-    <TableView aria-label="詰碁一覧" width="99%" minHeight="size-3000">
-      <TableHeader>
-        <Column maxWidth={128} align="start">
-          &nbsp;
-        </Column>
-        <Column>タイトル</Column>
-        <Column>説明</Column>
-        <Column maxWidth={64} align="end">
-          正答率
-        </Column>
-      </TableHeader>
-      <TableBody items={mergedItems}>
-        {(item) => (
-          <Row>
-            <Cell>
-              <ActionButton
-                isQuiet
-                onPress={() =>
-                  props.onClickShowProblem(item.problemId, item.title)
-                }
-              >
-                問題を見る
-              </ActionButton>
-            </Cell>
-            <Cell>{item.title}</Cell>
-            <Cell>{item.description}</Cell>
-            <Cell>{item.accuracy}</Cell>
-          </Row>
-        )}
-      </TableBody>
-    </TableView>
+    <Table
+      columns={columns}
+      dataSource={data}
+      size="small"
+      pagination={false}
+    />
   );
 }

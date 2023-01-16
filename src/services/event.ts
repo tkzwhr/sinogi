@@ -25,7 +25,18 @@ export async function listenBackendEvents() {
 
 export async function importSGF() {
   if (!tauriAvailable()) {
-    console.debug('Import SGF');
+    updateProgressEvent.emitUpdateProgress(0);
+
+    for (let i = 0; i < 100; i += 2) {
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      updateProgressEvent.emitUpdateProgress(i);
+    }
+
+    updateProgressEvent.emitUpdateProgress(100);
+    setTimeout(() => {
+      updateProgressEvent.emitUpdateProgress(null);
+      refreshBooksEvent.emitRefreshBooks();
+    }, 1000);
     return;
   }
 

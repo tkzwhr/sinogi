@@ -20,7 +20,8 @@
       "preact/hooks/*": ["react/*"],
       "preact/*": ["react/*"],
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["vitest/globals"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]

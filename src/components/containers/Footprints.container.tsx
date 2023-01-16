@@ -1,7 +1,18 @@
 import WeeklyHeatmap from '@/components/presentational/WeeklyHeatmap';
 import { DateSummary } from '@/types';
-import { Flex, Radio, RadioGroup, View } from '@adobe/react-spectrum';
+import { Space, Segmented } from 'antd';
 import { useState } from 'react';
+
+const options = [
+  {
+    value: 'numberOfAnswers',
+    label: '回答数',
+  },
+  {
+    value: 'accuracy',
+    label: '正答率',
+  },
+];
 
 type Props = {
   dateSummaries: DateSummary[];
@@ -13,33 +24,20 @@ export default function FootprintsContainer(props: Props) {
     'numberOfAnswers' | 'accuracy'
   >('numberOfAnswers');
 
-  const updateDisplayMode = (key: string) => {
-    if (key === 'numberOfAnswers') {
-      setDisplayMode('numberOfAnswers');
-    } else {
-      setDisplayMode('accuracy');
-    }
-  };
-
   return (
-    <Flex direction="column" gap="size-200">
-      <RadioGroup
-        label="表示項目"
-        orientation="horizontal"
+    <Space direction="vertical" size="large">
+      <Segmented
+        size="large"
+        options={options}
+        onChange={(value: any) => setDisplayMode(value)}
         value={displayMode}
-        onChange={updateDisplayMode}
-      >
-        <Radio value="numberOfAnswers">回答数</Radio>
-        <Radio value="accuracy">正答率</Radio>
-      </RadioGroup>
-      <View maxWidth="100vw" overflow="scroll">
-        <WeeklyHeatmap
-          items={props.dateSummaries}
-          weeks={10}
-          displayMode={displayMode}
-          quota={props.quota}
-        />
-      </View>
-    </Flex>
+      />
+      <WeeklyHeatmap
+        items={props.dateSummaries}
+        weeks={10}
+        displayMode={displayMode}
+        quota={props.quota}
+      />
+    </Space>
   );
 }
