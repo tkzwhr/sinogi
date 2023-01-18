@@ -9,8 +9,8 @@ use tauri::{
     AppHandle, CustomMenuItem, Manager, Menu, MenuItem, Runtime, Submenu, Window, WindowBuilder,
     WindowMenuEvent,
 };
-use tauri_plugin_sql::{Migration, MigrationKind, TauriSql};
-use tauri_plugin_store::PluginBuilder;
+use tauri_plugin_sql::{Builder as TauriSqlBuilder, Migration, MigrationKind, PluginConfig};
+use tauri_plugin_store::Builder as TauriStoreBuilder;
 
 fn main() {
     tauri::Builder::default()
@@ -23,20 +23,22 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-fn enable_sql_plugin<R: Runtime>() -> TauriSql<R> {
-    TauriSql::default().add_migrations(
-        "sqlite:sinogi.db",
-        vec![Migration {
-            version: 1,
-            description: "Create tables",
-            sql: include_str!("../migrations/V1__create_tables.sql"),
-            kind: MigrationKind::Up,
-        }],
-    )
+fn enable_sql_plugin<R: Runtime>() -> TauriPlugin<R, Option<PluginConfig>> {
+    TauriSqlBuilder::default()
+        .add_migrations(
+            "sqlite:sinogi.db",
+            vec![Migration {
+                version: 1,
+                description: "Create tables",
+                sql: include_str!("../migrations/V1__create_tables.sql"),
+                kind: MigrationKind::Up,
+            }],
+        )
+        .build()
 }
 
 fn enable_store_plugin<R: Runtime>() -> TauriPlugin<R> {
-    PluginBuilder::default().build()
+    TauriStoreBuilder::default().build()
 }
 
 fn enable_menu() -> Menu {
