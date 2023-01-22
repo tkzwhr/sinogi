@@ -11,7 +11,7 @@ import {
 import { SolveSettings } from '@/types';
 import { randomize } from '@/utils/randomize';
 import { BoundedGoban, Vertex } from '@sabaki/shudan';
-import { Button, Col, notification, Row, Space } from 'antd';
+import { Button, Col, notification, Row, Space, Tag, Typography } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import { useAsync, useCounter, useWindowSize } from 'react-use';
 
@@ -99,7 +99,7 @@ export default function SolveContainer(props: Props) {
       default:
         break;
     }
-  }, [solveMode, props.solveSettings]);
+  }, [solveMode]);
 
   if (sgfText.error) return <ErrorPage message={sgfText.error.message} />;
 
@@ -142,15 +142,31 @@ export default function SolveContainer(props: Props) {
             }}
           >
             <Space direction="vertical" size="large">
-              <TimeIndicator
-                allottedTime={props.solveSettings.allottedTime}
-                value={intervalTimer.rate}
-                time={intervalTimer.time}
-              />
-              <SolveCountIndicator
-                solveCount={solveCount}
-                quota={props.solveSettings.quota}
-              />
+              {props.solveSettings.allottedTime > 0 && (
+                <TimeIndicator
+                  allottedTime={props.solveSettings.allottedTime}
+                  value={intervalTimer.rate}
+                  time={intervalTimer.time}
+                />
+              )}
+              {props.solveSettings.quota > 0 && (
+                <SolveCountIndicator
+                  solveCount={solveCount}
+                  quota={props.solveSettings.quota}
+                />
+              )}
+              {solveMode !== 'ready' && (
+                <Space direction="vertical">
+                  <Typography.Text strong>手番</Typography.Text>
+                  <Tag
+                    color={
+                      problem.gameInfo.playerColor === 1 ? 'black' : 'default'
+                    }
+                  >
+                    {problem.gameInfo.playerColor === 1 ? '黒先' : '白先'}
+                  </Tag>
+                </Space>
+              )}
               <Button
                 disabled={
                   solveMode !== 'correctAnswered' &&

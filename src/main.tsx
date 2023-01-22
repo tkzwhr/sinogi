@@ -138,7 +138,7 @@ function App({ children }: { children: React.ReactNode }) {
         closable={false}
         centered
       >
-        <Progress percent={progress ?? 0} status="active" />
+        <Progress percent={Math.floor(progress ?? 0)} status="active" />
       </Modal>
     </>
   );

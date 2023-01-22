@@ -12,23 +12,18 @@ export default function TimeIndicator(props: Props) {
     token: { blue, yellow, red },
   } = theme.useToken();
 
-  const availableTimer = props.allottedTime > 0;
   const variant = props.value >= 0.5 ? blue : props.value >= 0.2 ? yellow : red;
   const valueLabel = format(props.time, 'm:ss');
 
   return (
-    <>
-      {availableTimer && (
-        <Space direction="vertical">
-          <Typography.Text strong>残り時間</Typography.Text>
-          <Progress
-            format={() => valueLabel}
-            type="circle"
-            percent={props.value * 100}
-            strokeColor={variant}
-          />
-        </Space>
-      )}
-    </>
+    <Space direction="vertical">
+      <Typography.Text strong>残り時間</Typography.Text>
+      <Progress
+        format={() => valueLabel}
+        type="circle"
+        percent={props.value * 100}
+        strokeColor={variant}
+      />
+    </Space>
   );
 }

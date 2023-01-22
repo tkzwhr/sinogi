@@ -21,6 +21,7 @@ export async function fetchBooks(): Promise<BookWithProblems[]> {
         FROM books b
                  INNER JOIN problems p ON b.book_id = p.book_id;
     `);
+  console.log(result);
 
   const books: Record<string, BookWithProblems> = {};
   for (const r of result) {
@@ -181,16 +182,31 @@ export async function storeProblem(
 ) {
   const db = await connectDB();
 
-  await db.execute(
-    `
+  // undefinedが"null"になってしまうため分岐処理を入れる
+  // cf. https://github.com/tauri-apps/plugins-workspace/issues/11
+
+  if (rawProblem.description === undefined) {
+    await db.execute(
+      `
+            INSERT INTO problems (book_id, title, sgf)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (book_id, title) DO UPDATE
+                SET sgf         = $3;
+        `,
+      [bookId, rawProblem.title, rawProblem.sgfText],
+    );
+  } else {
+    await db.execute(
+      `
             INSERT INTO problems (book_id, title, description, sgf)
             VALUES ($1, $2, $3, $4)
             ON CONFLICT (book_id, title) DO UPDATE
                 SET description = $3,
                     sgf         = $4;
         `,
-    [bookId, rawProblem.title, rawProblem.description, rawProblem.sgfText],
-  );
+      [bookId, rawProblem.title, rawProblem.description, rawProblem.sgfText],
+    );
+  }
 }
 
 export async function saveGameHistory(
