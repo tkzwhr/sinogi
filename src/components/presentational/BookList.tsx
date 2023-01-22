@@ -1,69 +1,58 @@
 import { Book } from '@/types';
-import {
-  ActionMenu,
-  Item,
-  ListView,
-  Text,
-  IllustratedMessage,
-  Content,
-} from '@adobe/react-spectrum';
-import NotFound from '@spectrum-icons/illustrations/NotFound';
-import Delete from '@spectrum-icons/workflow/Delete';
-import { Key } from 'react';
+import DeleteOutlined from '@ant-design/icons/DeleteOutlined';
+import { Button, Menu, Popconfirm } from 'antd';
+import { useMemo } from 'react';
 
 type Props = {
   items: Book[];
   selectedBook: Book['bookId'] | undefined;
-  onSelectBook: (_0: Book['bookId']) => void;
-
-  onDeleteBook: (_0: Book['bookId']) => void;
+  onSelectBook: (bookId: Book['bookId']) => void;
+  onDeleteBook: (bookId: Book['bookId']) => void;
 };
 
 export default function BookList(props: Props) {
-  const updateKeys = (keys: 'all' | Set<Key>) => {
-    if (keys === 'all' || keys.size !== 1) {
-      return;
-    }
-    props.onSelectBook(Array.from(keys as Set<string>)[0]);
-  };
-
-  const deleteBook = (bookId: Book['bookId']) => {
-    props.onDeleteBook(bookId);
-  };
-
-  const emptyState = () => {
-    return (
-      <IllustratedMessage>
-        <NotFound />
-        <Content>ブックが見つかりません</Content>
-      </IllustratedMessage>
-    );
-  };
+  const data = useMemo(
+    () =>
+      props.items.map((b) => ({
+        key: b.bookId,
+        label: (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>{b.name}</div>
+            <Popconfirm
+              title={`${b.name}を削除します`}
+              description="本当に削除してもよろしいですか？この操作は取り消せません。"
+              cancelText="キャンセル"
+              okText="削除する"
+              okType="danger"
+              onConfirm={() => props.onDeleteBook(b.bookId)}
+            >
+              <Button
+                shape="circle"
+                type="text"
+                danger
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
+          </div>
+        ),
+      })),
+    [props.items],
+  );
 
   return (
-    <ListView
-      items={props.items}
-      width="size-3000"
-      minHeight="size-3000"
-      aria-label="ブック"
-      selectionMode="single"
-      selectionStyle="highlight"
-      selectedKeys={props.selectedBook ? [props.selectedBook] : []}
-      onSelectionChange={updateKeys}
-      disallowEmptySelection
-      renderEmptyState={emptyState}
-    >
-      {(item) => (
-        <Item key={item.bookId}>
-          <Text>{item.name}</Text>
-          <ActionMenu onAction={() => deleteBook(item.bookId)}>
-            <Item key="delete" textValue="削除">
-              <Delete />
-              <Text>削除</Text>
-            </Item>
-          </ActionMenu>
-        </Item>
-      )}
-    </ListView>
+    <Menu
+      style={{ width: 360 }}
+      defaultSelectedKeys={
+        props.selectedBook ? [props.selectedBook] : undefined
+      }
+      items={data}
+      onClick={(e) => props.onSelectBook(e.key)}
+    />
   );
 }

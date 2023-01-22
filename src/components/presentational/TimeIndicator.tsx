@@ -1,4 +1,4 @@
-import { Meter } from '@adobe/react-spectrum';
+import { Progress, Space, theme, Typography } from 'antd';
 import { format } from 'date-fns';
 
 type Props = {
@@ -8,27 +8,22 @@ type Props = {
 };
 
 export default function TimeIndicator(props: Props) {
-  const availableTimer = props.allottedTime > 0;
-  const variant =
-    props.value >= 0.5
-      ? 'positive'
-      : props.value >= 0.2
-      ? 'warning'
-      : 'critical';
+  const {
+    token: { blue, yellow, red },
+  } = theme.useToken();
+
+  const variant = props.value >= 0.5 ? blue : props.value >= 0.2 ? yellow : red;
   const valueLabel = format(props.time, 'm:ss');
 
   return (
-    <>
-      {availableTimer && (
-        <Meter
-          width="100%"
-          label="残り時間"
-          maxValue={1}
-          value={props.value}
-          valueLabel={valueLabel}
-          variant={variant}
-        />
-      )}
-    </>
+    <Space direction="vertical">
+      <Typography.Text strong>残り時間</Typography.Text>
+      <Progress
+        format={() => valueLabel}
+        type="circle"
+        percent={props.value * 100}
+        strokeColor={variant}
+      />
+    </Space>
   );
 }

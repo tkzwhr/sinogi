@@ -112,10 +112,10 @@ export const dateSummaries: DateSummary[] = (() => {
 
 export const sgfText =
   '(;GM[1]FF[4]CA[UTF-8]SZ[19]GN[かんたんな詰碁１]GC[黒先白死]C[10級]' +
-  'AB[br][dr][cq][cp][ds][do][eo][fo][gp][hp][hq][ir][is]' +
-  'AW[er][es][gr][hr][hs][gq][ep][fp][dp]' +
-  '(;B[fs]TE[1];W[fr];B[eq]LB[dq:a]TR[fs][gs]C[白はaに入れないため△の1眼しかない。])' +
-  '(;B[eq];W[fq]LB[dq:A][fs:B]C[AとBが見合い。]))';
+  'AB[er][es][gr][hr][hs][gq][ep][fp][dp]' +
+  'AW[br][dr][cq][cp][ds][do][eo][fo][gp][hp][hq][ir][is]' +
+  '(;W[fs]TE[1];B[fr];W[eq]LB[dq:a]TR[fs][gs]C[白はaに入れないため△の1眼しかない。])' +
+  '(;W[eq];W[fq]LB[dq:A][fs:B]C[AとBが見合い。]))';
 
 export const solveSettings: SolveSettings = {
   scope: 'all',

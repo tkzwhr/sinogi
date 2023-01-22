@@ -1,6 +1,31 @@
 import { DateSummary } from '@/types';
-import { Flex, Grid, repeat, View } from '@adobe/react-spectrum';
+import { theme, Typography } from 'antd';
 import { isSameDay, subDays } from 'date-fns';
+import React from 'react';
+
+const WEEKS = ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thu.', 'Fri.', 'Sat.'];
+
+const styles: Record<string, React.CSSProperties> = {
+  grid: {
+    display: 'grid',
+    gridAutoFlow: 'column',
+    gridTemplateRows: 'repeat(7, 48px)',
+    gridAutoColumns: '48px',
+    gap: '4px',
+  },
+  week: {
+    display: 'flex',
+    justifyContent: 'end',
+    alignItems: 'center',
+    paddingRight: '4px',
+  },
+  statistics: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: '4px',
+  },
+};
 
 type Props = {
   items: DateSummary[];
@@ -9,9 +34,13 @@ type Props = {
   quota: number;
 };
 
-const WEEKS = ['Sun.', 'Mon.', 'Tue.', 'Wed.', 'Thu.', 'Fri.', 'Sat.'];
-
 export default function WeeklyHeatmap(props: Props) {
+  const { token } = theme.useToken();
+  const blue = token['blue-3'];
+  const green = token['green-3'];
+  const gold = token['gold-3'];
+  const gray = token.colorBgContainerDisabled;
+
   const today = new Date();
   const numberOfItems = 7 * (props.weeks - 1) + today.getDay() + 1;
   const items: DateSummary[] = Array(numberOfItems)
@@ -27,59 +56,50 @@ export default function WeeklyHeatmap(props: Props) {
         }
       );
     });
-  const backgroundColor = (dateSummary: DateSummary): any => {
-    if (dateSummary.numberOfAnswers === 0) return 'gray-200';
+
+  const backgroundColor = (dateSummary: DateSummary) => {
+    if (dateSummary.numberOfAnswers === 0) return gray;
 
     if (props.displayMode === 'numberOfAnswers') {
-      return dateSummary.numberOfAnswers >= props.quota
-        ? 'positive'
-        : 'informative';
+      return dateSummary.numberOfAnswers >= props.quota ? green : blue;
     } else {
       if (dateSummary.numberOfAnswers === dateSummary.numberOfCorrectAnswers)
-        return 'notice';
+        return gold;
       return dateSummary.numberOfCorrectAnswers / dateSummary.numberOfAnswers >=
         0.6
-        ? 'positive'
-        : 'informative';
+        ? green
+        : blue;
     }
+  };
+  const displayValue = (dateSummary: DateSummary) => {
+    if (dateSummary.numberOfAnswers === 0) return '';
+
+    return props.displayMode === 'numberOfAnswers'
+      ? dateSummary.numberOfAnswers
+      : `${Math.floor(
+          (dateSummary.numberOfCorrectAnswers / dateSummary.numberOfAnswers) *
+            100,
+        )}%`;
   };
 
   return (
-    <Grid
-      autoFlow="column"
-      rows={repeat(7, 'size-675')}
-      autoColumns="size-675"
-      gap="size-65"
-    >
+    <div style={styles.grid}>
       {WEEKS.map((week) => (
-        <View key={week} paddingEnd="4px">
-          <Flex height="100%" justifyContent="end" alignItems="center">
-            {week}
-          </Flex>
-        </View>
+        <div key={week} style={styles.week}>
+          <Typography.Text strong>{week}</Typography.Text>
+        </div>
       ))}
-
       {items.map((history) => (
-        <View
+        <div
           key={history.date.toString()}
-          backgroundColor={backgroundColor(history)}
-          borderRadius="small"
+          style={{
+            ...styles.statistics,
+            backgroundColor: backgroundColor(history),
+          }}
         >
-          <Flex height="100%" justifyContent="center" alignItems="center">
-            {history.numberOfAnswers > 0 && (
-              <>
-                {props.displayMode === 'numberOfAnswers'
-                  ? history.numberOfAnswers
-                  : `${Math.floor(
-                      (history.numberOfCorrectAnswers /
-                        history.numberOfAnswers) *
-                        100,
-                    )}%`}
-              </>
-            )}
-          </Flex>
-        </View>
+          {displayValue(history)}
+        </div>
       ))}
-    </Grid>
+    </div>
   );
 }

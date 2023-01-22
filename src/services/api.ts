@@ -1,6 +1,8 @@
+import { refreshBooksEvent } from '@/services/event';
 import * as Mock from '@/services/mock';
 import * as Store from '@/services/store';
 import {
+  Book,
   BookProblemSummary,
   BookWithProblems,
   DateSummary,
@@ -9,6 +11,7 @@ import {
   SolveSettings,
 } from '@/types';
 import { tauriAvailable } from '@/utils/tauri';
+import { invoke } from '@tauri-apps/api/tauri';
 
 export async function fetchBooks(): Promise<{ items: BookWithProblems[] }> {
   if (!tauriAvailable()) return Mock.delay({ items: Mock.bookWithProblems });
@@ -75,7 +78,9 @@ export async function storeGameHistory(
   isCorrect: boolean,
 ) {
   if (!tauriAvailable()) {
-    console.debug(problemId, isCorrect);
+    console.debug(
+      `storeGameHistory: ${JSON.stringify({ problemId, isCorrect })}`,
+    );
     return Promise.resolve();
   }
 
@@ -86,15 +91,31 @@ export async function storeSolveSettings(
   solveSettings: SolveSettings,
 ): Promise<void> {
   if (!tauriAvailable()) {
-    console.debug(solveSettings);
+    console.debug(`storeSolveSettings: ${JSON.stringify(solveSettings)}`);
     return Promise.resolve();
   }
 
   return Store.saveSolveSettings(solveSettings);
 }
 
-export async function openProblemView(problemId: Problem['problemId']) {
+export async function deleteBook(bookId: Book['bookId']): Promise<void> {
+  if (!tauriAvailable()) {
+    console.debug(`deleteBook: ${JSON.stringify(bookId)}`);
+    return Promise.resolve();
+  }
+
+  await Store.deleteBook(bookId);
+  refreshBooksEvent.emitRefreshBooks();
+}
+
+export async function openProblemView(
+  problemId: Problem['problemId'],
+  title?: string | undefined,
+) {
   if (!tauriAvailable()) {
     window.open(`/problems/${problemId}`, 'problem', 'height=600,width=840');
+    return;
   }
+
+  await invoke('open_problem_view', { problemId, title: title ?? problemId });
 }

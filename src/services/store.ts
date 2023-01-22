@@ -21,6 +21,7 @@ export async function fetchBooks(): Promise<BookWithProblems[]> {
         FROM books b
                  INNER JOIN problems p ON b.book_id = p.book_id;
     `);
+  console.log(result);
 
   const books: Record<string, BookWithProblems> = {};
   for (const r of result) {
@@ -103,7 +104,8 @@ export async function fetchDateSummaries(): Promise<DateSummary[]> {
   const db = await connectDB();
 
   const result: any[] = await db.select(`
-        SELECT gh.played_at, gh.is_correct FROM game_histories gh;
+        SELECT gh.played_at, gh.is_correct
+        FROM game_histories gh;
     `);
 
   const grouped: Record<string, any[]> = nestedGroupBy(result, ['played_at']);
@@ -125,8 +127,10 @@ export async function fetchTodayDateSummary(): Promise<DateSummary> {
 
   const result: any[] = await db.select(
     `
-        SELECT gh.is_correct FROM game_histories gh WHERE gh.played_at = $1;
-    `,
+            SELECT gh.is_correct
+            FROM game_histories gh
+            WHERE gh.played_at = $1;
+        `,
     [format(today, 'yyyy-MM-dd')],
   );
 
@@ -178,16 +182,31 @@ export async function storeProblem(
 ) {
   const db = await connectDB();
 
-  await db.execute(
-    `
+  // undefinedが"null"になってしまうため分岐処理を入れる
+  // cf. https://github.com/tauri-apps/plugins-workspace/issues/11
+
+  if (rawProblem.description === undefined) {
+    await db.execute(
+      `
+            INSERT INTO problems (book_id, title, sgf)
+            VALUES ($1, $2, $3)
+            ON CONFLICT (book_id, title) DO UPDATE
+                SET sgf         = $3;
+        `,
+      [bookId, rawProblem.title, rawProblem.sgfText],
+    );
+  } else {
+    await db.execute(
+      `
             INSERT INTO problems (book_id, title, description, sgf)
             VALUES ($1, $2, $3, $4)
             ON CONFLICT (book_id, title) DO UPDATE
                 SET description = $3,
                     sgf         = $4;
         `,
-    [bookId, rawProblem.title, rawProblem.description, rawProblem.sgfText],
-  );
+      [bookId, rawProblem.title, rawProblem.description, rawProblem.sgfText],
+    );
+  }
 }
 
 export async function saveGameHistory(
@@ -207,6 +226,52 @@ export async function saveGameHistory(
 
 export async function saveSolveSettings(solveSettings: SolveSettings) {
   await storeToKVS('SolveSettings', solveSettings);
+}
+
+export async function deleteBook(bookId: Book['bookId']): Promise<void> {
+  const db = await connectDB();
+
+  const targetProblems: any[] = await db.select(
+    `SELECT p.problem_id
+         FROM problems p
+         WHERE p.book_id = $1;`,
+    [bookId],
+  );
+
+  if (targetProblems.length > 0) {
+    /* Note: In current sqlx, cannot bind values to `IN` clause.
+             Have no choice but to create query manually.
+             cf. https://github.com/launchbadge/sqlx/blob/main/FAQ.md#how-can-i-do-a-select--where-foo-in--query
+     */
+    const targetProblemIdsString = targetProblems
+      .map((tp) => tp.problem_id)
+      .join(',');
+    await db.execute(
+      `
+                DELETE
+                FROM game_histories
+                WHERE problem_id IN (${targetProblemIdsString});
+            `,
+    );
+  }
+
+  await db.execute(
+    `
+            DELETE
+            FROM problems
+            WHERE book_id = $1;
+        `,
+    [bookId],
+  );
+
+  await db.execute(
+    `
+            DELETE
+            FROM books
+            WHERE book_id = $1;
+        `,
+    [bookId],
+  );
 }
 
 async function connectDB(): Promise<Database> {

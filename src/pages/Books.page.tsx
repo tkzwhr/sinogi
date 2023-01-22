@@ -1,14 +1,31 @@
 import BooksContainer from '@/components/containers/Books.container';
-import PageFoundationContainer from '@/components/containers/PageFoundation.container';
 import { ErrorPage } from '@/pages/Error.page';
 import { fetchBookProblemSummaries, fetchBooks } from '@/services/api';
-import { ProgressCircle } from '@adobe/react-spectrum';
-import { useAsync } from 'react-use';
+import { importSGF, refreshBooksEvent } from '@/services/event';
+import FileAddOutlined from '@ant-design/icons/FileAddOutlined';
+import { Empty, FloatButton, Spin } from 'antd';
+import { useEffect } from 'react';
+import { useAsyncFn } from 'react-use';
 
 export default function BooksPage() {
-  const books = useAsync(fetchBooks);
+  const [books, invokeFetchBooks] = useAsyncFn(fetchBooks, [], {
+    loading: true,
+  });
+  const [bookProblemSummaries, invokeFetchBookProblemSummaries] = useAsyncFn(
+    fetchBookProblemSummaries,
+    [],
+    { loading: true },
+  );
 
-  const bookProblemSummaries = useAsync(fetchBookProblemSummaries);
+  useEffect(() => {
+    invokeFetchBooks().then();
+    invokeFetchBookProblemSummaries().then();
+  }, []);
+
+  refreshBooksEvent.useRefreshBooksListener(() => {
+    invokeFetchBooks().then();
+    invokeFetchBookProblemSummaries().then();
+  });
 
   if (books.error) return <ErrorPage message={books.error.message} />;
 
@@ -16,18 +33,28 @@ export default function BooksPage() {
     return <ErrorPage message={bookProblemSummaries.error.message} />;
 
   const loading = books.loading || bookProblemSummaries.loading;
+  if (loading)
+    return (
+      <Spin size="large">
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      </Spin>
+    );
 
   return (
-    <PageFoundationContainer>
-      <h2>問題管理</h2>
-      {loading ? (
-        <ProgressCircle aria-label="読み込み中..." size="L" isIndeterminate />
+    <>
+      {books.value!.items.length === 0 ? (
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
       ) : (
         <BooksContainer
           bookWithProblems={books.value!.items}
           bookProblemSummaries={bookProblemSummaries.value!.items}
         />
       )}
-    </PageFoundationContainer>
+      <FloatButton
+        icon={<FileAddOutlined />}
+        type="primary"
+        onClick={importSGF}
+      />
+    </>
   );
 }

@@ -1,7 +1,7 @@
 import ViewerContainer from '@/components/containers/Viewer.container';
 import { ErrorPage } from '@/pages/Error.page';
 import { fetchProblemSGF } from '@/services/api';
-import { ProgressCircle, View } from '@adobe/react-spectrum';
+import { Empty, Spin } from 'antd';
 import { useParams } from 'react-router-dom';
 import { useAsync } from 'react-use';
 
@@ -13,13 +13,12 @@ export default function ViewerPage() {
   if (sgfText.error)
     return <ErrorPage type={404} message={sgfText.error.message} />;
 
-  return (
-    <View padding="size-200">
-      {sgfText.loading ? (
-        <ProgressCircle aria-label="読み込み中..." size="L" isIndeterminate />
-      ) : (
-        <ViewerContainer sgfText={sgfText.value!.sgfText} />
-      )}
-    </View>
-  );
+  if (sgfText.loading)
+    return (
+      <Spin size="large">
+        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
+      </Spin>
+    );
+
+  return <ViewerContainer sgfText={sgfText.value!.sgfText} />;
 }

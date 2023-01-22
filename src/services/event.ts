@@ -1,16 +1,16 @@
-import { extractProblems } from '@/services/sabaki';
 import { storeBook, storeProblem } from '@/services/store';
+import { extractProblems } from '@/utils/sabaki';
 import { tauriAvailable } from '@/utils/tauri';
 import { open } from '@tauri-apps/api/dialog';
 import { Event, listen } from '@tauri-apps/api/event';
 import { readTextFile } from '@tauri-apps/api/fs';
 import { createEvent } from 'react-event-hook';
 
-const NavigatePageEvent = createEvent('navigate_page');
-export const navigatePageEvent = NavigatePageEvent<string>();
-
-const UpdateProgressEvent = createEvent('update_progress');
-export const updateProgressEvent = UpdateProgressEvent<number | null>();
+export const navigatePageEvent = createEvent('navigate_page')<string>();
+export const updateProgressEvent = createEvent('update_progress')<
+  number | null
+>();
+export const refreshBooksEvent = createEvent('refresh_books')();
 
 export async function listenBackendEvents() {
   if (!tauriAvailable()) return;
@@ -24,6 +24,22 @@ export async function listenBackendEvents() {
 }
 
 export async function importSGF() {
+  if (!tauriAvailable()) {
+    updateProgressEvent.emitUpdateProgress(0);
+
+    for (let i = 0; i < 100; i += 2) {
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      updateProgressEvent.emitUpdateProgress(i);
+    }
+
+    updateProgressEvent.emitUpdateProgress(100);
+    setTimeout(() => {
+      updateProgressEvent.emitUpdateProgress(null);
+      refreshBooksEvent.emitRefreshBooks();
+    }, 1000);
+    return;
+  }
+
   const selectedFile = (await open({
     filters: [
       {
@@ -55,5 +71,6 @@ export async function importSGF() {
   updateProgressEvent.emitUpdateProgress(100);
   setTimeout(() => {
     updateProgressEvent.emitUpdateProgress(null);
+    refreshBooksEvent.emitRefreshBooks();
   }, 1000);
 }

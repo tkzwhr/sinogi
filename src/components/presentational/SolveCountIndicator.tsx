@@ -1,4 +1,4 @@
-import { Meter } from '@adobe/react-spectrum';
+import { Progress, Space, theme, Typography } from 'antd';
 
 type Props = {
   solveCount: number;
@@ -6,21 +6,21 @@ type Props = {
 };
 
 export default function SolveCountIndicator(props: Props) {
-  const availableQuota = props.quota > 0;
+  const {
+    token: { blue, green },
+  } = theme.useToken();
+
+  const value = (props.solveCount / props.quota) * 100;
   const valueLabel = `${props.solveCount} / ${props.quota}`;
 
   return (
-    <>
-      {availableQuota && (
-        <Meter
-          width="100%"
-          label="今日の回答数"
-          maxValue={props.quota}
-          value={props.solveCount}
-          valueLabel={valueLabel}
-          variant={props.solveCount < props.quota ? 'warning' : 'positive'}
-        />
-      )}
-    </>
+    <Space direction="vertical">
+      <Typography.Text strong>今日の回答数</Typography.Text>
+      <Progress
+        format={() => valueLabel}
+        percent={value}
+        strokeColor={props.solveCount < props.quota ? blue : green}
+      />
+    </Space>
   );
 }

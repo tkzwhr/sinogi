@@ -1,10 +1,8 @@
 import BookList from '@/components/presentational/BookList';
 import BookProblems from '@/components/presentational/BookProblems';
-import { openProblemView } from '@/services/api';
-import { importSGF } from '@/services/event';
+import { openProblemView, deleteBook } from '@/services/api';
 import { Book, BookProblemSummary, BookWithProblems } from '@/types';
-import { tauriAvailable } from '@/utils/tauri';
-import { ActionGroup, Flex, Item } from '@adobe/react-spectrum';
+import { Col, Row } from 'antd';
 import { useState } from 'react';
 
 type Props = {
@@ -17,50 +15,30 @@ export default function BooksContainer(props: Props) {
     Book['bookId'] | undefined
   >();
 
-  const selectFile = () => {
-    if (!tauriAvailable()) {
-      console.log('Import button clicked.');
-      return;
-    }
-
-    importSGF().then();
-  };
-
-  const confirmDeleteBook = (bookId: Book['bookId']) => {
-    console.log(`delete: ${bookId}`);
-  };
-
   const book = props.bookWithProblems.find((i) => i.bookId === selectedBook);
   const bookProblemSummary =
     props.bookProblemSummaries.find((i) => i.bookId === selectedBook)
       ?.problemSummaries ?? [];
 
   return (
-    <Flex gap="size-200">
-      <Flex direction="column" gap="size-200">
+    <Row gutter={16}>
+      <Col flex="360px">
         <BookList
           items={props.bookWithProblems}
           selectedBook={selectedBook}
           onSelectBook={setSelectedBook}
-          onDeleteBook={confirmDeleteBook}
+          onDeleteBook={deleteBook}
         />
-        <ActionGroup
-          onAction={selectFile}
-          defaultSelectedKeys="all"
-          selectionMode="multiple"
-          disallowEmptySelection
-          isEmphasized
-        >
-          <Item key="import">SFGファイルからインポート</Item>
-        </ActionGroup>
-      </Flex>
-      {book && (
-        <BookProblems
-          items={book.problems}
-          solveSummary={bookProblemSummary}
-          onClickShowProblem={openProblemView}
-        />
-      )}
-    </Flex>
+      </Col>
+      <Col flex="auto">
+        {book && (
+          <BookProblems
+            items={book.problems}
+            solveSummary={bookProblemSummary}
+            onClickShowProblem={openProblemView}
+          />
+        )}
+      </Col>
+    </Row>
   );
 }

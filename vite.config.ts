@@ -1,5 +1,6 @@
-import { defineConfig } from 'vite';
+/// <reference types="vitest" />
 import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -10,5 +11,8 @@ export default defineConfig({
       { find: 'preact', replacement: 'react' },
       { find: '@', replacement: '/src' },
     ],
+  },
+  test: {
+    globals: true,
   },
 });
