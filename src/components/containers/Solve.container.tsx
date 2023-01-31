@@ -167,6 +167,14 @@ export default function SolveContainer(props: Props) {
                   </Tag>
                 </Space>
               )}
+              {solveMode !== 'ready' && (
+                <Space direction="vertical">
+                  <Typography.Text strong>コメント</Typography.Text>
+                  <Typography.Text>
+                    {problem.boardState?.comment ?? ''}
+                  </Typography.Text>
+                </Space>
+              )}
               <Button
                 disabled={
                   solveMode !== 'correctAnswered' &&
