@@ -29,7 +29,14 @@ export default function SolveContainer(props: Props) {
 
   const [problemId, setProblemId] = useState(randomize(props.problemIds));
   const nextProblem = useCallback(
-    () => setProblemId(randomize(props.problemIds)),
+    () =>
+      setProblemId((prevState) => {
+        let nextState = randomize(props.problemIds);
+        while (props.problemIds.length > 1 && prevState === nextState) {
+          nextState = randomize(props.problemIds);
+        }
+        return nextState;
+      }),
     [props.problemIds],
   );
 
