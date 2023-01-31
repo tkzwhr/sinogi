@@ -11,6 +11,7 @@ use tauri::{
 };
 use tauri_plugin_sql::{Builder as TauriSqlBuilder, Migration, MigrationKind, PluginConfig};
 use tauri_plugin_store::Builder as TauriStoreBuilder;
+use tauri_plugin_window_state::Builder as TauriWindowStateBuilder;
 
 fn main() {
     tauri::Builder::default()
@@ -18,6 +19,7 @@ fn main() {
         .on_menu_event(menu_handler)
         .plugin(enable_sql_plugin())
         .plugin(enable_store_plugin())
+        .plugin(enable_window_state_plugin())
         .invoke_handler(tauri::generate_handler![open_problem_view])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -39,6 +41,10 @@ fn enable_sql_plugin<R: Runtime>() -> TauriPlugin<R, Option<PluginConfig>> {
 
 fn enable_store_plugin<R: Runtime>() -> TauriPlugin<R> {
     TauriStoreBuilder::default().build()
+}
+
+fn enable_window_state_plugin<R: Runtime>() -> TauriPlugin<R> {
+    TauriWindowStateBuilder::default().build()
 }
 
 fn enable_menu() -> Menu {
