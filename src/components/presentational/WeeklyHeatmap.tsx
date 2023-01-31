@@ -74,12 +74,18 @@ export default function WeeklyHeatmap(props: Props) {
   const displayValue = (dateSummary: DateSummary) => {
     if (dateSummary.numberOfAnswers === 0) return '';
 
-    return props.displayMode === 'numberOfAnswers'
-      ? dateSummary.numberOfAnswers
-      : `${Math.floor(
-          (dateSummary.numberOfCorrectAnswers / dateSummary.numberOfAnswers) *
-            100,
-        )}%`;
+    if (props.displayMode === 'numberOfAnswers')
+      return dateSummary.numberOfAnswers;
+
+    if (dateSummary.numberOfCorrectAnswers === dateSummary.numberOfAnswers)
+      return '100%';
+
+    const percentage =
+      Math.floor(
+        (dateSummary.numberOfCorrectAnswers / dateSummary.numberOfAnswers) *
+          1000,
+      ) / 10;
+    return `${percentage}%`;
   };
 
   return (

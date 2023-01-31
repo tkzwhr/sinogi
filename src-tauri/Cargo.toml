@@ -1,6 +1,6 @@
 [package]
 name = "sinogi"
-version = "0.1.0"
+version = "0.1.1"
 description = "Tsumego trainer"
 authors = ["Takizawa Hiroki"]
 license = ""
@@ -19,6 +19,7 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.2", features = ["dialog-open", "fs-read-file"] }
 tauri-plugin-sql = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev", features = ["sqlite"] }
 tauri-plugin-store = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-window-state = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
 
 [features]
 # by default Tauri runs in production mode

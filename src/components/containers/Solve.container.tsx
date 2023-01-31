@@ -29,7 +29,14 @@ export default function SolveContainer(props: Props) {
 
   const [problemId, setProblemId] = useState(randomize(props.problemIds));
   const nextProblem = useCallback(
-    () => setProblemId(randomize(props.problemIds)),
+    () =>
+      setProblemId((prevState) => {
+        let nextState = randomize(props.problemIds);
+        while (props.problemIds.length > 1 && prevState === nextState) {
+          nextState = randomize(props.problemIds);
+        }
+        return nextState;
+      }),
     [props.problemIds],
   );
 
@@ -165,6 +172,14 @@ export default function SolveContainer(props: Props) {
                   >
                     {problem.gameInfo.playerColor === 1 ? '黒先' : '白先'}
                   </Tag>
+                </Space>
+              )}
+              {solveMode !== 'ready' && (
+                <Space direction="vertical">
+                  <Typography.Text strong>コメント</Typography.Text>
+                  <Typography.Text>
+                    {problem.boardState?.comment ?? ''}
+                  </Typography.Text>
                 </Space>
               )}
               <Button
