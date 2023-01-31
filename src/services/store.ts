@@ -93,7 +93,7 @@ export async function fetchBookProblemSummaries(): Promise<
       problemId: k2,
       numberOfAnswers: v2.length,
       numberOfCorrectAnswers: v2.reduce(
-        (acc, v) => (acc + v.is_correct ? 1 : 0),
+        (acc, v) => acc + (v.is_correct ? 1 : 0),
         0,
       ),
     })),
@@ -109,12 +109,13 @@ export async function fetchDateSummaries(): Promise<DateSummary[]> {
     `);
 
   const grouped: Record<string, any[]> = nestedGroupBy(result, ['played_at']);
+  console.log(grouped);
 
   return Object.entries(grouped).map(([k, v]) => ({
     date: parseISO(k),
     numberOfAnswers: v.length,
     numberOfCorrectAnswers: v.reduce(
-      (acc, v) => (acc + v.is_correct ? 1 : 0),
+      (acc, v) => acc + (v.is_correct ? 1 : 0),
       0,
     ),
   }));
@@ -138,7 +139,7 @@ export async function fetchTodayDateSummary(): Promise<DateSummary> {
     date: today,
     numberOfAnswers: result.length,
     numberOfCorrectAnswers: result.reduce(
-      (acc, v) => (acc + v.is_correct ? 1 : 0),
+      (acc, v) => acc + (v.is_correct ? 1 : 0),
       0,
     ),
   };
