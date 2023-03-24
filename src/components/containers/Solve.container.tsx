@@ -2,6 +2,8 @@ import SolveCountIndicator from '@/components/presentational/SolveCountIndicator
 import TimeIndicator from '@/components/presentational/TimeIndicator';
 import useIntervalTimer from '@/hooks/interval-timer';
 import useProblem from '@/hooks/problem';
+import useShuffle from '@/hooks/shuffle';
+import useSolveState from '@/hooks/solve-state';
 import { ErrorPage } from '@/pages/Error.page';
 import {
   fetchProblemSGF,
@@ -9,11 +11,10 @@ import {
   storeGameHistory,
 } from '@/services/api';
 import { SolveSettings } from '@/types';
-import { randomize } from '@/utils/randomize';
 import { BoundedGoban, Vertex } from '@sabaki/shudan';
 import { Button, Col, notification, Row, Space, Tag, Typography } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
-import { useAsync, useCounter, useWindowSize } from 'react-use';
+import { useEffect } from 'react';
+import { useAsync, useWindowSize } from 'react-use';
 
 type Props = {
   solveSettings: SolveSettings;
@@ -23,100 +24,90 @@ type Props = {
 
 export default function SolveContainer(props: Props) {
   const { width, height } = useWindowSize();
-  const [api, contextHolder] = notification.useNotification();
 
-  const [solveMode, nextSolveMode, altSolveMode] = useSolveMode();
+  const [notificationFn, contextHolder] = notification.useNotification();
 
-  const [problemId, setProblemId] = useState(randomize(props.problemIds));
-  const nextProblem = useCallback(
-    () =>
-      setProblemId((prevState) => {
-        let nextState = randomize(props.problemIds);
-        while (props.problemIds.length > 1 && prevState === nextState) {
-          nextState = randomize(props.problemIds);
-        }
-        return nextState;
-      }),
-    [props.problemIds],
-  );
+  const [solveState, solveStateDispatch] = useSolveState();
 
-  const sgfText = useAsync(() => fetchProblemSGF(problemId!), [problemId]);
+  const [problemId, selectProblem] = useShuffle(props.problemIds);
+
+  const sgfText = useAsync(() => fetchProblemSGF(problemId), [problemId]);
+
   const [problem, problemFn] = useProblem(
-    solveMode !== 'ready' && sgfText.value ? sgfText.value.sgfText : '',
-  );
-  const [lastPlayerMove, setLastPlayerMove] = useState<[number, number] | null>(
-    null,
+    solveState.status !== 'INITIALIZED' && sgfText.value
+      ? sgfText.value.sgfText
+      : '',
   );
 
   const [intervalTimer, intervalTimerFn] = useIntervalTimer(
     props.solveSettings.allottedTime,
-    () => altSolveMode(),
+    () => solveStateDispatch({ type: 'RUN_OUT_OF_TIME' }),
   );
-
-  const [solveCount, { inc: incSolveCount }] = useCounter(
-    props.todaySolveCount,
-  );
-
-  const answer = (vertex: Vertex) => {
-    const [x, y] = vertex;
-    if (problem.boardState.board.signMap[y][x] !== 0) return;
-
-    const result = problemFn.play(vertex);
-    if (result.isLastMove && !result.isCorrectRoute) {
-      setLastPlayerMove(vertex);
-    }
-    result.isLastMove ? altSolveMode(result.isCorrectRoute) : nextSolveMode();
-  };
 
   useEffect(() => {
-    const usesTimer = props.solveSettings.allottedTime > 0;
-    switch (solveMode) {
-      case 'opponentPlaying':
-        setTimeout(() => {
-          const result = problemFn.randomPlay();
-          result.isLastMove
-            ? altSolveMode(result.isCorrectRoute)
-            : nextSolveMode();
-        }, 100);
+    switch (solveState.status) {
+      case 'WAIT_FOR_OPPONENT_PLAY':
+        setTimeout(
+          () =>
+            solveStateDispatch({
+              type: 'OPPONENT_PLAY',
+              ...problemFn.playRandom(),
+            }),
+          100,
+        );
         break;
-      case 'correctAnswered':
-        storeGameHistory(problemId!, true).then();
-        incSolveCount();
-        usesTimer && intervalTimerFn.pause();
-        api.success({ message: '正解！', placement: 'topLeft' });
-        break;
-      case 'answered':
-        storeGameHistory(problemId!, false).then();
-        incSolveCount();
-        usesTimer && intervalTimerFn.pause();
-        api.error({ message: '残念...', placement: 'topLeft' });
-        break;
-      case 'timedOut':
-        api.warning({ message: '時間切れ', placement: 'topLeft' });
-        break;
-      case 'restart':
-        setLastPlayerMove(null);
-        nextProblem();
-      // fallthrough
-      case 'start':
-        problemFn.rewind();
-        usesTimer && intervalTimerFn.restart();
-        nextSolveMode();
-        break;
-      default:
+      case 'FINISHED':
+        if (props.solveSettings.allottedTime > 0) {
+          intervalTimerFn.pause();
+        }
+        switch (solveState.playResult) {
+          case 'CORRECT':
+            storeGameHistory(problemId, true).then();
+            notificationFn.success({ message: '正解！', placement: 'topLeft' });
+            break;
+          case 'INCORRECT':
+            storeGameHistory(problemId, false).then();
+            notificationFn.error({ message: '残念...', placement: 'topLeft' });
+            break;
+          case 'TIMED_OUT':
+            notificationFn.warning({
+              message: '時間切れ',
+              placement: 'topLeft',
+            });
+            break;
+        }
         break;
     }
-  }, [solveMode]);
+  }, [solveState.status]);
+
+  const start = () => {
+    if (solveState.status !== 'INITIALIZED') {
+      selectProblem();
+    }
+    if (props.solveSettings.allottedTime > 0) {
+      intervalTimerFn.restart();
+    }
+    problemFn.rewind();
+    solveStateDispatch({ type: 'START' });
+  };
+
+  const play = (vertex: Vertex) => {
+    if (solveState.status !== 'WAIT_FOR_PLAYER_PLAY') {
+      return;
+    }
+
+    solveStateDispatch({
+      type: 'PLAY',
+      vertex,
+      playResult: problemFn.play(vertex),
+    });
+  };
 
   if (sgfText.error) return <ErrorPage message={sgfText.error.message} />;
 
-  const next = () => {
-    nextSolveMode();
-  };
-
   let signMap = problem.boardState.board.signMap;
-  if (lastPlayerMove) {
-    const [x, y] = lastPlayerMove;
+  if (solveState.lastIncorrectPlayVertex) {
+    const [x, y] = solveState.lastIncorrectPlayVertex;
     signMap = problem.boardState.board.signMap.map((column, c) =>
       column.map((row, r) => {
         return r === x && c === y ? problem.gameInfo.playerColor : row;
@@ -133,9 +124,7 @@ export default function SolveContainer(props: Props) {
             maxHeight={height - 48}
             signMap={signMap}
             markerMap={problem.boardState.markerMap}
-            onVertexClick={(_: any, vertex: Vertex) =>
-              solveMode === 'playing' && answer(vertex)
-            }
+            onVertexClick={(_: any, vertex: Vertex) => play(vertex)}
           />
         </Col>
         <Col style={{ maxWidth: '360px' }}>
@@ -158,11 +147,11 @@ export default function SolveContainer(props: Props) {
               )}
               {props.solveSettings.quota > 0 && (
                 <SolveCountIndicator
-                  solveCount={solveCount}
+                  solveCount={props.todaySolveCount + solveState.solveCount}
                   quota={props.solveSettings.quota}
                 />
               )}
-              {solveMode !== 'ready' && (
+              {solveState.status !== 'INITIALIZED' && (
                 <Space direction="vertical">
                   <Typography.Text strong>手番</Typography.Text>
                   <Tag
@@ -174,7 +163,7 @@ export default function SolveContainer(props: Props) {
                   </Tag>
                 </Space>
               )}
-              {solveMode !== 'ready' && (
+              {solveState.status !== 'INITIALIZED' && (
                 <Space direction="vertical">
                   <Typography.Text strong>コメント</Typography.Text>
                   <Typography.Text>
@@ -183,13 +172,9 @@ export default function SolveContainer(props: Props) {
                 </Space>
               )}
               <Button
-                disabled={
-                  solveMode !== 'correctAnswered' &&
-                  solveMode !== 'answered' &&
-                  solveMode !== 'timedOut'
-                }
+                disabled={solveState.status !== 'FINISHED'}
                 onClick={() =>
-                  openProblemView(problemId!, problem.gameInfo.gameName)
+                  openProblemView(problemId, problem.gameInfo.gameName)
                 }
               >
                 答えを確認する
@@ -198,14 +183,12 @@ export default function SolveContainer(props: Props) {
             <Button
               type="primary"
               disabled={
-                solveMode !== 'ready' &&
-                solveMode !== 'correctAnswered' &&
-                solveMode !== 'answered' &&
-                solveMode !== 'timedOut'
+                solveState.status === 'WAIT_FOR_PLAYER_PLAY' ||
+                solveState.status === 'WAIT_FOR_OPPONENT_PLAY'
               }
-              onClick={next}
+              onClick={start}
             >
-              {solveMode === 'ready' ? 'スタート' : '次の問題へ'}
+              {solveState.status === 'INITIALIZED' ? 'スタート' : '次の問題へ'}
             </Button>
           </div>
         </Col>
@@ -213,65 +196,4 @@ export default function SolveContainer(props: Props) {
       {contextHolder}
     </>
   );
-}
-
-type SolveMode =
-  | 'ready'
-  | 'start'
-  | 'playing'
-  | 'opponentPlaying'
-  | 'correctAnswered'
-  | 'answered'
-  | 'timedOut'
-  | 'restart';
-
-function useSolveMode(): [
-  SolveMode,
-  () => void,
-  (isCorrect?: boolean) => void,
-] {
-  const [solveMode, setSolveMode] = useState<SolveMode>('ready');
-  const next = useCallback(() => {
-    setSolveMode((prev) => {
-      switch (prev) {
-        case 'ready':
-          return 'start';
-        case 'start':
-          return 'playing';
-        case 'playing':
-          return 'opponentPlaying';
-        case 'opponentPlaying':
-          return 'playing';
-        case 'correctAnswered':
-          return 'restart';
-        case 'answered':
-          return 'restart';
-        case 'timedOut':
-          return 'restart';
-        case 'restart':
-          return 'playing';
-      }
-    });
-  }, []);
-  const alt = useCallback((isCorrect?: boolean) => {
-    setSolveMode((prev) => {
-      switch (prev) {
-        case 'playing':
-          return isCorrect === undefined
-            ? 'timedOut'
-            : isCorrect
-            ? 'correctAnswered'
-            : 'answered';
-        case 'opponentPlaying':
-          return isCorrect === undefined
-            ? 'timedOut'
-            : isCorrect
-            ? 'correctAnswered'
-            : 'answered';
-        default:
-          return prev;
-      }
-    });
-  }, []);
-  return [solveMode, next, alt];
 }

@@ -1,3 +1,4 @@
+import { PlayResult } from '@/types';
 import {
   BoardState,
   createGameTree,
@@ -17,17 +18,12 @@ type ProblemState = {
   boardState: BoardState;
 };
 
-type PlayResult = {
-  isCorrectRoute: boolean;
-  isLastMove: boolean;
-};
-
 type ProblemFn = {
   rewind: () => void;
   undo: () => void;
   redo: () => void;
-  play: (vertex: Vertex) => PlayResult;
-  randomPlay: () => PlayResult;
+  play: (vertex: Vertex) => PlayResult | null;
+  playRandom: () => PlayResult;
 };
 
 export default function useProblem(
@@ -72,12 +68,17 @@ export default function useProblem(
   }, [gameTree, currentId]);
 
   const play = useCallback(
-    (vertex: Vertex): PlayResult => {
+    (vertex: Vertex): PlayResult | null => {
+      const [x, y] = vertex;
+      if (boardState.board.signMap[y][x] !== 0) {
+        return null;
+      }
+
       const node = gameTree.get(currentId);
       if (!node)
         return {
-          isCorrectRoute: false,
-          isLastMove: true,
+          advancesCorrectRoute: false,
+          reachesToLastMove: true,
         };
 
       const child = node.children.find((c: any) => {
@@ -88,26 +89,25 @@ export default function useProblem(
       });
       if (!child)
         return {
-          isCorrectRoute: false,
-          isLastMove: true,
+          advancesCorrectRoute: false,
+          reachesToLastMove: true,
         };
 
       setCurrentId(child.id);
 
-      const [x, y] = vertex;
       return {
-        isCorrectRoute: boardState.ghostStoneMap?.[y][x]?.type === 'good',
-        isLastMove: gameTree.get(child.id)?.children.length === 0,
+        advancesCorrectRoute: boardState.ghostStoneMap?.[y][x]?.type === 'good',
+        reachesToLastMove: gameTree.get(child.id)?.children.length === 0,
       };
     },
     [gameTree, currentId],
   );
 
-  const randomPlay = useCallback((): PlayResult => {
+  const playRandom = useCallback((): PlayResult => {
     if (!boardState.ghostStoneMap)
       return {
-        isCorrectRoute: false,
-        isLastMove: true,
+        advancesCorrectRoute: false,
+        reachesToLastMove: true,
       };
 
     const ghostStones: { vertex: Vertex; isTesuji: boolean }[] =
@@ -121,18 +121,18 @@ export default function useProblem(
 
     if (ghostStones.length === 0)
       return {
-        isCorrectRoute: false,
-        isLastMove: true,
+        advancesCorrectRoute: false,
+        reachesToLastMove: true,
       };
 
     const tesujis = ghostStones.filter((gs) => gs.isTesuji);
     if (tesujis.length > 0) {
       const move = tesujis[Math.floor(Math.random() * tesujis.length)];
-      return play(move.vertex);
+      return play(move.vertex)!;
     }
 
     const move = ghostStones[Math.floor(Math.random() * ghostStones.length)];
-    return play(move.vertex);
+    return play(move.vertex)!;
   }, [gameTree, currentId]);
 
   return [
@@ -145,7 +145,7 @@ export default function useProblem(
       undo,
       redo,
       play,
-      randomPlay,
+      playRandom,
     },
   ];
 }

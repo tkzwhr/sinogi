@@ -43,3 +43,8 @@ export type SolveSettings = {
   quota: number;
   allottedTime: number;
 };
+
+export type PlayResult = {
+  advancesCorrectRoute: boolean;
+  reachesToLastMove: boolean;
+};
