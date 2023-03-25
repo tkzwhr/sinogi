@@ -10,8 +10,8 @@ import {
   openProblemView,
   storeGameHistory,
 } from '@/services/api';
-import { SolveSettings } from '@/types';
-import { BoundedGoban, Vertex } from '@sabaki/shudan';
+import { SolveSettings, Vertex } from '@/types';
+import { BoundedGoban } from '@sabaki/shudan';
 import { Button, Col, notification, Row, Space, Tag, Typography } from 'antd';
 import { useEffect } from 'react';
 import { useAsync, useWindowSize } from 'react-use';

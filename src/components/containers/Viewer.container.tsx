@@ -1,8 +1,9 @@
 import useProblem from '@/hooks/problem';
+import { Vertex } from '@/types';
 import FastBackwardOutlined from '@ant-design/icons/FastBackwardOutlined';
 import LeftOutlined from '@ant-design/icons/LeftOutlined';
 import RightOutlined from '@ant-design/icons/RightOutlined';
-import { BoundedGoban, Vertex } from '@sabaki/shudan';
+import { BoundedGoban } from '@sabaki/shudan';
 import { Button, Col, Row, Space, Typography } from 'antd';
 import { useWindowSize } from 'react-use';
 

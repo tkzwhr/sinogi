@@ -1,5 +1,5 @@
+import { extractGames } from '@/helpers/go-game.helper';
 import { storeBook, storeProblem } from '@/services/store';
-import { extractProblems } from '@/utils/sabaki';
 import { tauriAvailable } from '@/utils/tauri';
 import { open } from '@tauri-apps/api/dialog';
 import { Event, listen } from '@tauri-apps/api/event';
@@ -52,7 +52,7 @@ export async function importSGF() {
 
   const sgfText = await readTextFile(selectedFile);
 
-  const rawProblems = extractProblems(sgfText);
+  const rawProblems = extractGames(sgfText);
   if (rawProblems.length === 0) return;
 
   updateProgressEvent.emitUpdateProgress(0);

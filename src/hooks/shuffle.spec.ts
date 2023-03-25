@@ -44,11 +44,11 @@ describe('useShuffle', () => {
 
   it('空配列ではエラーになること', async () => {
     // Arrange
-    const renderHookFn = () => renderHook(() => useShuffle([]));
+    const actFn = () => renderHook(() => useShuffle([]));
 
     // Act
 
     // Assert
-    expect(renderHookFn).toThrowError('No data given.');
+    expect(actFn).toThrowError('No data given.');
   });
 });

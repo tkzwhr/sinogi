@@ -32,7 +32,7 @@ describe('useSolveState', () => {
     });
   });
 
-  it('自分の石を置いたら相手の手番になること', async () => {
+  it('自分が石を置いたら相手の手番になること', async () => {
     // Arrange
     const { result: hook } = renderHook(() => useSolveState());
 
@@ -62,7 +62,7 @@ describe('useSolveState', () => {
     });
   });
 
-  it('自分の石を置けないときは自分の手番のままになっていること', async () => {
+  it('自分が石を置けないときは自分の手番のままになっていること', async () => {
     // Arrange
     const { result: hook } = renderHook(() => useSolveState());
 
@@ -88,7 +88,7 @@ describe('useSolveState', () => {
     });
   });
 
-  it('相手の石を置いたら自分の手番になること', async () => {
+  it('相手が石を置いたら自分の手番になること', async () => {
     // Arrange
     const { result: hook } = renderHook(() => useSolveState());
 
@@ -126,7 +126,37 @@ describe('useSolveState', () => {
     });
   });
 
-  it('自分の石を置いて終わったら完了になること', async () => {
+  it('自分が石を置いて正解したら正解で完了になること', async () => {
+    // Arrange
+    const { result: hook } = renderHook(() => useSolveState());
+
+    // Act
+    await act(async () => {
+      const [, fn] = hook.current;
+      fn({ type: 'START' });
+    });
+    await act(async () => {
+      const [, fn] = hook.current;
+      fn({
+        type: 'PLAY',
+        vertex: [1, 2],
+        playResult: { advancesCorrectRoute: true, reachesToLastMove: true },
+      });
+    });
+
+    // Assert
+    await waitFor(() => {
+      const [actual] = hook.current;
+      expect(actual).toStrictEqual({
+        status: 'FINISHED',
+        solveCount: 1,
+        playResult: 'CORRECT',
+        lastIncorrectPlayVertex: null,
+      });
+    });
+  });
+
+  it('自分が石を置いて不正解になったら不正解で完了になること', async () => {
     // Arrange
     const { result: hook } = renderHook(() => useSolveState());
 
@@ -156,7 +186,7 @@ describe('useSolveState', () => {
     });
   });
 
-  it('相手の石を置いて終わったら完了になること', async () => {
+  it('相手が石を置いて正解になったら正解で完了になること', async () => {
     // Arrange
     const { result: hook } = renderHook(() => useSolveState());
 
@@ -189,6 +219,44 @@ describe('useSolveState', () => {
         status: 'FINISHED',
         solveCount: 1,
         playResult: 'CORRECT',
+        lastIncorrectPlayVertex: null,
+      });
+    });
+  });
+
+  it('相手が石を置いて不正解になったら不正解で完了になること', async () => {
+    // Arrange
+    const { result: hook } = renderHook(() => useSolveState());
+
+    // Act
+    await act(async () => {
+      const [, fn] = hook.current;
+      fn({ type: 'START' });
+    });
+    await act(async () => {
+      const [, fn] = hook.current;
+      fn({
+        type: 'PLAY',
+        vertex: [1, 2],
+        playResult: { advancesCorrectRoute: true, reachesToLastMove: false },
+      });
+    });
+    await act(async () => {
+      const [, fn] = hook.current;
+      fn({
+        type: 'OPPONENT_PLAY',
+        advancesCorrectRoute: false,
+        reachesToLastMove: true,
+      });
+    });
+
+    // Assert
+    await waitFor(() => {
+      const [actual] = hook.current;
+      expect(actual).toStrictEqual({
+        status: 'FINISHED',
+        solveCount: 1,
+        playResult: 'INCORRECT',
         lastIncorrectPlayVertex: null,
       });
     });

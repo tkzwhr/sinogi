@@ -1,4 +1,4 @@
-import { PlayResult as PlayResultType } from '@/types';
+import { PlayResult as PlayResultType, Vertex } from '@/types';
 import { Dispatch, useReducer } from 'react';
 
 const ActionType = {
@@ -11,7 +11,7 @@ const ActionType = {
 type ActionPayload = {
   [ActionType.START]: {};
   [ActionType.PLAY]: {
-    vertex: [x: number, y: number];
+    vertex: Vertex;
     playResult: PlayResultType | null;
   };
   [ActionType.OPPONENT_PLAY]: PlayResultType;
@@ -37,7 +37,7 @@ type State = {
   status: Status;
   solveCount: number;
   playResult: PlayResult | null;
-  lastIncorrectPlayVertex: [x: number, y: number] | null;
+  lastIncorrectPlayVertex: Vertex | null;
 };
 
 const initialState: State = {
