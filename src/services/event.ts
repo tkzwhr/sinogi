@@ -25,18 +25,12 @@ export async function listenBackendEvents() {
 
 export async function importSGF() {
   if (!tauriAvailable()) {
-    updateProgressEvent.emitUpdateProgress(0);
-
-    for (let i = 0; i < 100; i += 2) {
-      await new Promise((resolve) => setTimeout(resolve, 40));
-      updateProgressEvent.emitUpdateProgress(i);
-    }
-
-    updateProgressEvent.emitUpdateProgress(100);
-    setTimeout(() => {
-      updateProgressEvent.emitUpdateProgress(null);
-      refreshBooksEvent.emitRefreshBooks();
-    }, 1000);
+    await progress(async (increment) => {
+      for (let i = 0; i < 40; i += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+        increment();
+      }
+    }, 40);
     return;
   }
 
@@ -55,18 +49,32 @@ export async function importSGF() {
   const rawProblems = extractGames(sgfText);
   if (rawProblems.length === 0) return;
 
-  updateProgressEvent.emitUpdateProgress(0);
-
   const bookName = selectedFile.split(/([\\/])/g).pop()!;
   const bookId = await storeBook(bookName);
 
-  for (const rp of rawProblems) {
-    const index = rawProblems.indexOf(rp);
+  await progress(async (increment) => {
+    for (const rp of rawProblems) {
+      await storeProblem(bookId, rp);
+      increment();
+    }
+  }, rawProblems.length);
+}
 
-    await storeProblem(bookId, rp);
+async function progress(exec: (increment: () => void) => void, total: number) {
+  // initialize
 
-    updateProgressEvent.emitUpdateProgress((index / rawProblems.length) * 100);
-  }
+  updateProgressEvent.emitUpdateProgress(0);
+
+  // progress
+
+  let count = 0;
+
+  await exec(() => {
+    count += 1;
+    updateProgressEvent.emitUpdateProgress((count / total) * 100);
+  });
+
+  // finalize
 
   updateProgressEvent.emitUpdateProgress(100);
   setTimeout(() => {
