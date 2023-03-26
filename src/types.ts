@@ -1,3 +1,7 @@
+import { Vertex as ShudanVertex } from '@sabaki/shudan';
+
+export type Vertex = ShudanVertex;
+
 export type Book = {
   bookId: string;
   name: string;
@@ -42,4 +46,9 @@ export type SolveSettings = {
   selectedBooks: Book['bookId'][];
   quota: number;
   allottedTime: number;
+};
+
+export type PlayResult = {
+  advancesCorrectRoute: boolean;
+  reachesToLastMove: boolean;
 };
