@@ -14,7 +14,8 @@ Sinogi
 下記のものが必要です。
 
 - Rust 1.61
-- Node.js 16
+- Volta 1.x
+- Node 18.x
 
 ### Frontend
 
