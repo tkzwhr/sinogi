@@ -63,12 +63,25 @@ export async function fetchSolveSettings(): Promise<SolveSettings> {
 
   const settings = await Store.fetchSolveSettings();
 
+  if (settings && !settings.rotateMode) {
+    settings.rotateMode = 'disabled';
+  }
+  if (settings && !settings.flipMode) {
+    settings.flipMode = 'disabled';
+  }
+  if (settings && !settings.invertColorMode) {
+    settings.invertColorMode = 'disabled';
+  }
+
   return (
     settings ?? {
       scope: 'all',
       selectedBooks: [],
       quota: 0,
       allottedTime: 0,
+      rotateMode: 'disabled',
+      flipMode: 'disabled',
+      invertColorMode: 'disabled',
     }
   );
 }

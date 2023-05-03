@@ -122,6 +122,9 @@ export const solveSettings: SolveSettings = {
   selectedBooks: ['2'],
   quota: 20,
   allottedTime: 5,
+  rotateMode: '90deg',
+  flipMode: 'horizontal',
+  invertColorMode: 'inverted',
 };
 
 export function delay<T>(value: T): Promise<T> {

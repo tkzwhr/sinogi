@@ -1,4 +1,5 @@
 import * as GoGameFn from './go-game.helper';
+import { flip, invertColor, rotate } from './go-game.helper';
 
 const B = 1;
 const W = -1;
@@ -18,6 +19,67 @@ const flattenText = (text: string) =>
     .split('\n')
     .map((t) => t.trim())
     .join('');
+
+describe('rotate', () => {
+  it('正方形の碁盤で反時計周りに90度回転できること', () => {
+    // Arrange
+    const sgfText = createSGFText('SZ[9]AB[bi]LB[bi:1];W[ch]TR[ch]');
+
+    // Act
+    const result = rotate(sgfText, '90deg');
+
+    // Assert
+    expect(result).toBe(createSGFText('SZ[9]AB[ih]LB[ih:1];W[hg]TR[hg]'));
+  });
+
+  it('長方形の碁盤で反時計周りに90度回転できること', () => {
+    // Arrange
+    const sgfText = createSGFText('SZ[5:9]AB[bi]LB[bi:1];W[ch]TR[ch]');
+
+    // Act
+    const result = rotate(sgfText, '90deg');
+
+    // Assert
+    expect(result).toBe(createSGFText('SZ[9:5]AB[id]LB[id:1];W[hc]TR[hc]'));
+  });
+});
+
+describe('flip', () => {
+  it('左右反転できること', () => {
+    // Arrange
+    const sgfText = createSGFText('SZ[9]AB[bi]LB[bi:1];W[ch]TR[ch]');
+
+    // Act
+    const result = flip(sgfText, 'horizontal');
+
+    // Assert
+    expect(result).toBe(createSGFText('SZ[9]AB[hi]LB[hi:1];W[gh]TR[gh]'));
+  });
+
+  it('上下反転できること', () => {
+    // Arrange
+    const sgfText = createSGFText('SZ[9]AB[bi]LB[bi:1];W[ch]TR[ch]');
+
+    // Act
+    const result = flip(sgfText, 'vertical');
+
+    // Assert
+    expect(result).toBe(createSGFText('SZ[9]AB[ba]LB[ba:1];W[cb]TR[cb]'));
+  });
+});
+
+describe('invertColor', () => {
+  it('色反転できること', () => {
+    // Arrange
+    const sgfText = createSGFText('SZ[9]AB[bi]LB[bi:A]VW[aa:bb];W[ch]');
+
+    // Act
+    const result = invertColor(sgfText);
+
+    // Assert
+    expect(result).toBe(createSGFText('SZ[9]AW[bi]LB[bi:A]VW[aa:bb];B[ch]'));
+  });
+});
 
 describe('extractGames', () => {
   it('2つ以上の棋譜をそれぞれの棋譜情報として取得できること', () => {
