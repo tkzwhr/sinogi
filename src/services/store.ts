@@ -21,7 +21,6 @@ export async function fetchBooks(): Promise<BookWithProblems[]> {
         FROM books b
                  INNER JOIN problems p ON b.book_id = p.book_id;
     `);
-  console.log(result);
 
   const books: Record<string, BookWithProblems> = {};
   for (const r of result) {
@@ -109,7 +108,6 @@ export async function fetchDateSummaries(): Promise<DateSummary[]> {
     `);
 
   const grouped: Record<string, any[]> = nestedGroupBy(result, ['played_at']);
-  console.log(grouped);
 
   return Object.entries(grouped).map(([k, v]) => ({
     date: parseISO(k),
