@@ -49,6 +49,41 @@ export function extractGames(sgfText: string): RawProblem[] {
   });
 }
 
+export function rotate(
+  sgfText: string,
+  angle: '0deg' | '90deg' | '180deg' | '270deg',
+): string {
+  const angleInDeg = parseInt(angle);
+  let result = sgfText;
+  for (let i = 0; i < angleInDeg; i += 90) {
+    result = replaceVertices(result, true, ([w], [x, y]) => {
+      const newY = flipVertexChar(x, w);
+      return `${y}${newY}`;
+    });
+  }
+  return result;
+}
+
+export function flip(
+  sgfText: string,
+  direction: 'horizontal' | 'vertical',
+): string {
+  return replaceVertices(sgfText, false, ([w, h], [x, y]) => {
+    const newX = direction === 'horizontal' ? flipVertexChar(x, w) : x;
+    const newY = direction === 'vertical' ? flipVertexChar(y, h) : y;
+    return `${newX}${newY}`;
+  });
+}
+
+export function invertColor(sgfText: string): string {
+  return sgfText
+    .replaceAll('B[', '@[')
+    .replaceAll('W[', 'B[')
+    .replaceAll('@[', 'W[')
+    .replaceAll('LW[', 'LB[') // the 'B' of LB does not mean black
+    .replaceAll('VB[', 'VW['); // the 'W' of VW does not mean white
+}
+
 export function createGameTree(sgfText: string): GoGameTree {
   const rootNodes: GoNodeObject[] = SGF.parse(sgfText);
   if (rootNodes.length > 1) throw 'Too many records.';
@@ -180,6 +215,34 @@ export function generateAllBoardState(
   });
 
   return boardStateMap;
+}
+
+function flipVertexChar(char: string, boardSize: number): string {
+  return String.fromCharCode(
+    2 * 'a'.charCodeAt(0) + boardSize - 1 - char.charCodeAt(0),
+  );
+}
+
+function replaceVertices(
+  sgfText: string,
+  withRotateBoard: boolean,
+  fn: (size: [number, number], vertex: [string, string]) => string,
+): string {
+  const {
+    size: [w, h],
+  } = getGameInfo(createGameTree(sgfText));
+
+  const replaced = sgfText.replace(
+    /\[([a-z])([a-z])(:[^\]])?]/g,
+    (_, p1, p2, p3) => `[${fn([w, h], [p1, p2])}${p3 ? p3 : ''}]`,
+  );
+
+  if (!withRotateBoard) {
+    return replaced;
+  }
+
+  const newSize = w === h ? `${w}` : `${h}:${w}`;
+  return replaced.replace(/SZ\[.+?]/, `SZ[${newSize}]`);
 }
 
 function generateGoBoard(

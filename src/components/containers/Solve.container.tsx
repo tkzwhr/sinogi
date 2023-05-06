@@ -1,5 +1,6 @@
 import SolveCountIndicator from '@/components/presentational/SolveCountIndicator';
 import TimeIndicator from '@/components/presentational/TimeIndicator';
+import * as GoGameHelper from '@/helpers/go-game.helper';
 import useIntervalTimer from '@/hooks/interval-timer';
 import useProblem from '@/hooks/problem';
 import useShuffle from '@/hooks/shuffle';
@@ -13,7 +14,7 @@ import {
 import { SolveSettings, Vertex } from '@/types';
 import { BoundedGoban } from '@sabaki/shudan';
 import { Button, Col, notification, Row, Space, Tag, Typography } from 'antd';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAsync, useWindowSize } from 'react-use';
 
 type Props = {
@@ -33,10 +34,58 @@ export default function SolveContainer(props: Props) {
 
   const sgfText = useAsync(() => fetchProblemSGF(problemId), [problemId]);
 
+  const adjustedSgfText = useMemo(() => {
+    if (!sgfText.value) {
+      return undefined;
+    }
+
+    let result = sgfText.value.sgfText;
+
+    if (props.solveSettings.rotateMode !== 'disabled') {
+      if (props.solveSettings.rotateMode !== 'random') {
+        result = GoGameHelper.rotate(result, props.solveSettings.rotateMode);
+      } else {
+        const modeList: ('90deg' | '180deg' | '270deg')[] = [
+          '90deg',
+          '180deg',
+          '270deg',
+        ];
+        result = GoGameHelper.rotate(
+          result,
+          modeList[Math.floor(Math.random() * modeList.length)],
+        );
+      }
+    }
+
+    if (props.solveSettings.flipMode !== 'disabled') {
+      if (props.solveSettings.flipMode !== 'random') {
+        result = GoGameHelper.flip(result, props.solveSettings.flipMode);
+      } else {
+        const modeList: ('horizontal' | 'vertical')[] = [
+          'horizontal',
+          'vertical',
+        ];
+        result = GoGameHelper.flip(
+          result,
+          modeList[Math.floor(Math.random() * modeList.length)],
+        );
+      }
+    }
+
+    if (props.solveSettings.invertColorMode !== 'disabled') {
+      if (
+        props.solveSettings.invertColorMode === 'inverted' ||
+        Math.random() < 0.5
+      ) {
+        result = GoGameHelper.invertColor(result);
+      }
+    }
+
+    return result;
+  }, [sgfText.value]);
+
   const [problem, problemFn] = useProblem(
-    solveState.status !== 'INITIALIZED' && sgfText.value
-      ? sgfText.value.sgfText
-      : '',
+    solveState.status !== 'INITIALIZED' ? adjustedSgfText : undefined,
   );
 
   const [intervalTimer, intervalTimerFn] = useIntervalTimer(

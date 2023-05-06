@@ -46,6 +46,9 @@ export type SolveSettings = {
   selectedBooks: Book['bookId'][];
   quota: number;
   allottedTime: number;
+  rotateMode: 'disabled' | '90deg' | '180deg' | '270deg' | 'random';
+  flipMode: 'disabled' | 'horizontal' | 'vertical' | 'random';
+  invertColorMode: 'disabled' | 'inverted' | 'random';
 };
 
 export type PlayResult = {
