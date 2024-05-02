@@ -1,4 +1,4 @@
-import addSeconds from 'date-fns/addSeconds';
+import { addSeconds } from 'date-fns';
 import { useCallback } from 'react';
 import { useTimer } from 'react-timer-hook';
 
