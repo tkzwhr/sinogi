@@ -13,9 +13,9 @@ Sinogi
 
 下記のものが必要です。
 
-- Rust 1.61
+- Rust 1.77
 - Volta 1.x
-- Node 18.x
+- Node 20.x
 
 ### Frontend
 
@@ -45,9 +45,14 @@ yarn test --coverage
 
 ### Backend
 
+事前に関連ライブラリをインストールします。
+
+https://tauri.app/v1/guides/getting-started/prerequisites/#setting-up-linux
+
 バックエンド部分も含めたアプリは
 
 ```shell
+cargo install cargo-cli # 初回のみ
 cargo tauri dev
 ```
 
